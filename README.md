@@ -1,10 +1,11 @@
 # Notepatch - a small (200 KB) and simple clone of Windows Notepad with a few fixes and enhancements
 
-Notepatch tries to slightly enhance and fix some flaws of classic Notepad, but following the [KISS principle](https://en.wikipedia.org/wiki/KISS_principle). It's neither [Notepad2](https://github.com/ProgerXP/Notepad2e) nor [Notepad++](https://github.com/notepad-plus-plus/notepad-plus-plus), but still just a small and simple single-document (non-tabbed) b/w text/code editor that doesn't know anything about programming languages and syntax highlighting, there is no Scintilla or the like involved. But it behaves a little more like an actual code editor, e.g. double-clicking selects what you usually want to select, Tab resp. Shift+Tab indents/unindents selected text blocks etc. And it supports dark mode, which classic Notepad does not.
+Notepatch tries to slightly enhance and fix some flaws of classic Notepad, but following the [KISS principle](https://en.wikipedia.org/wiki/KISS_principle). It's neither [Notepad2](https://github.com/ProgerXP/Notepad2e) nor [Notepad++](https://github.com/notepad-plus-plus/notepad-plus-plus), but still just a small and simple single-document (non-tabbed) b/w text editor that doesn't know anything about programming languages and syntax highlighting, there is no Scintilla or the like involved. But it behaves a little more like an actual code editor, e.g. double-clicking selects what you usually want to select, Tab resp. Shift+Tab indents/unindents selected text blocks etc. And it supports dark mode, which classic Notepad does not.
 
 Since MS Notepad is closed source, Notepatch is not really a "patch" but rather a rewrite, but it uses exactly the same classic Win32 controls (in particular the [Edit control](https://learn.microsoft.com/en-us/windows/win32/controls/edit-controls) as its core) as well as the same menu, dialog and string resources as original Notepad, only slightly adjusting/extending those resources.
 
 ## Features
+
 - Dark mode support (including dialogs) in Windows 10 and 11. The editor's "Theme" can be set to either "Dark", "Light" or "Auto", where the latter means that the editor uses dark mode if and only if the system currently uses a dark theme (for applications).
 - View modes (distraction free) "Fullscreen" (F11), "Transparent" (Alt+T) and "Always on Top" (Alt-A) in the "View" menu
 - Double-clicking in the text only selects the actual current word (letters, numerals and underscores), like any other editor (except for Notepad) does, but no extra white space or other non-word characters.
@@ -27,6 +28,7 @@ Since MS Notepad is closed source, Notepatch is not really a "patch" but rather 
 And that's it.
 
 ## Screenshots
+
 *Light mode (Windows 11)*  
 ![Dialogs in dark mode](screenshots/notepatch-light.png)
 
@@ -36,15 +38,20 @@ And that's it.
 *Some dialogs in dark mode (Windows 11)*  
 ![Some dialogs in dark mode](screenshots/notepatch-dark-dialogs.png)
 
-
 ## Optional: Replacing Notepad
+
 If you like, you can replace Notepad with Notepatch by running provided batch script "Notepad-Replace.cmd" as administrator from the same folder as Notepatch.exe. If you move this folder afterwards, you have to run the script again. Running "Notepad-Restore.cmd", again as administrator, will restore original Notepad.
 
 Of course "Notepad-Replace.cmd" doesn't touch the file notepad.exe in the system directory at all, but instead only adds stuff to the system registry (HKLM) that activates "hijacking" (Image File Execution Options) for notepad.exe, so any attempt to execute "notepad.exe" is redirected to "Notepatch.exe". "Notepad-Restore.cmd" will remove this redirection again.
 
 Check the batch script's code and decide yourself if you want to do this.
 
+## Supported Windows versions
+
+Notepatch runs in Windows 7 and later, but dark mode is only available in Windows 10 and 11.
+
 ## Code
+
 To compile the application you need Visual Studio 2017 or later, there are no other dependancies.
 
 Since the code was originally written in plain C and only at the end turned into C++, it's still mostly C and e.g. uses malloc/free instead of the C++ equivalents, I guess this should eventually be refactored.
