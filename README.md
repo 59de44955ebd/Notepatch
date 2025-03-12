@@ -10,7 +10,7 @@ Since MS Notepad is closed source, Notepatch is not really a "patch" but rather 
 - Double-clicking in the text only selects the actual current word (letters, numerals and underscores), like any other editor (except for Notepad) does, but no extra white space or other non-word characters.
 - If a multi-line text block is selected, Tab key indents the selected block, Shift+Tab unindents the selected block, accordig to the current indent mode (Tab or Spaces).
 - The Enter key preserves the current indentation (leading Tabs or Spaces) in the new line.
-- Indent mode can be either Tab or Spaces (so e.g. Python scriptd, which usually use Spaces for indentation, can also be edited without corrupting them). In Spaces mode the Tab key adds Spaces and the Backspace key removes spaces, both according to the current indent size.
+- Indent mode can be either Tab or Spaces (so e.g. Python scripts, which usually use Spaces for indentation, can also be edited without corrupting them). In Spaces mode the Tab key adds Spaces and the Backspace key removes Spaces, both according to the current indent size.
 - Indent size can be adjusted - 2, 4 (default), 8 or 16 characters - both in Tab and Spaces mode.
 - When multi-line text with Linux (LF) or Mac (CR) line endings is pasted into the editor, the line endings are automatically converted and therefor the text remains in multiple lines
 - Current line ending mode (CRLF, LF, CR), text encoding (ANSI, UTF-8, UTF-8 BOM, UTF-16, UTF-16 BE) and indent mode (Tab, Spaces) can be changed, either via some extra submenus in the File menu or by right or double clicking the corresponding section in the status bar. Saving the document will then apply the new mode to the file saved on disk.
@@ -45,4 +45,6 @@ Of course "Notepad-Replace.cmd" doesn't touch the file notepad.exe in the system
 Check the batch script's code and decide yourself if you want to do this.
 
 ## Code
-To compile the application you need Visual Studio 2017 or later, there are no other dependancies. Since the code was originally written in plain C and only at the end turned into C++, it's still mostly C and e.g. uses malloc/free instead of the C++ equivalents, I guess this should eventually be refactored.
+To compile the application you need Visual Studio 2017 or later, there are no other dependancies.
+
+Since the code was originally written in plain C and only at the end turned into C++, it's still mostly C and e.g. uses malloc/free instead of the C++ equivalents, I guess this should eventually be refactored.
