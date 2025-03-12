@@ -1,0 +1,281 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "Resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include <winres.h>
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Englisch (USA) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_APP             ICON                    "..\\res\\Notepatch.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINMENU MENU
+BEGIN
+	POPUP "&File"
+  	BEGIN
+	    MENUITEM "&New\tCtrl+N",  				IDM_FILE_NEW
+	    MENUITEM "New &Window\tCtrl+Shift+N",  	IDM_FILE_NEWWINDOW
+	    MENUITEM "&Open...\tCtrl+O",  			IDM_FILE_OPEN
+	    MENUITEM "&Save\tCtrl+S",  				IDM_FILE_SAVE
+	    MENUITEM "Save &As...\tCtrl+Shift+S",  	IDM_FILE_SAVEAS
+	    MENUITEM SEPARATOR
+	    MENUITEM "Page Set&up...",  			IDM_FILE_PAGESETUP
+	    MENUITEM "&Print...\tCtrl+P",  			IDM_FILE_PRINT
+	    MENUITEM SEPARATOR
+	    MENUITEM "E&xit",  						IDM_FILE_EXIT
+  	END
+  	POPUP "&Edit"
+  	BEGIN
+	    MENUITEM "&Undo\tCtrl+Z",  				IDM_EDIT_UNDO
+	    MENUITEM SEPARATOR
+	    MENUITEM "Cu&t\tCtrl+X",  				IDM_EDIT_CUT,  GRAYED
+	    MENUITEM "&Copy\tCtrl+C",  				IDM_EDIT_COPY,  GRAYED
+	    MENUITEM "&Paste\tCtrl+V",  			IDM_EDIT_PASTE,  GRAYED
+	    MENUITEM "De&lete\tDel",  				IDM_EDIT_CLEAR,  GRAYED
+	    MENUITEM SEPARATOR
+	    MENUITEM "&Search with Bing...\tCtrl+E",	IDM_EDIT_SEARCH_BING,  GRAYED
+	    MENUITEM "&Find...\tCtrl+F",  			IDM_EDIT_FIND
+	    MENUITEM "Find &Next\tF3",  			IDM_EDIT_FINDNEXT
+	    MENUITEM "Find Pre&vious\tShift+F3",  	IDM_EDIT_FINDPREV
+	    MENUITEM "&Replace...\tCtrl+H",  		IDM_EDIT_REPLACE
+	    MENUITEM "&Go To...\tCtrl+G",  			IDM_EDIT_GOTO
+	    MENUITEM SEPARATOR
+	    MENUITEM "Select &All\tCtrl+A",  		IDM_EDIT_SELECTALL
+	    MENUITEM "Time/&Date\tF5",  			IDM_EDIT_TIMEDATE
+  	END
+  	POPUP "F&ormat"
+  	BEGIN
+	    MENUITEM "&Word Wrap",  				IDM_FORMAT_WORDWRAP
+	    MENUITEM "&Font...",  					IDM_FORMAT_FONT
+  	END
+	POPUP "&View"
+	BEGIN
+		POPUP "&Zoom"
+		BEGIN
+			MENUITEM "Zoom &In\tCtrl+Plus",  	IDM_VIEW_ZOOMIN
+			MENUITEM "Zoom &Out\tCtrl+Minus",  	IDM_VIEW_ZOOMOUT
+			MENUITEM "&Restore Default Zoom\tCtrl+0",  IDM_VIEW_ZOOMRESET
+	   END
+		MENUITEM "&Status Bar",  				IDM_VIEW_STATUSBAR
+	END
+  	POPUP "&Help"
+	BEGIN
+	    MENUITEM "View &Help",  				IDM_HELP_HELP
+	    MENUITEM "Send &Feedback",  			IDM_HELP_FEEDBACK
+	    MENUITEM SEPARATOR
+	    MENUITEM "&About Notepad",  			IDM_HELP_ABOUT
+ 	END
+END
+
+IDR_POPUPMENU MENU
+BEGIN
+    POPUP "+"
+    BEGIN
+	    MENUITEM "&Windows (CR+LF)",            IDM_LINEENDINGS_CRLF,  CHECKED
+	    MENUITEM "&Unix (LF)",                  IDM_LINEENDINGS_LF
+	    MENUITEM "&Mac (CR)",                   IDM_LINEENDINGS_CR
+    END
+    POPUP "+"
+    BEGIN
+	    MENUITEM "&ANSI",                       IDM_ENCODING_ANSI
+	    MENUITEM "&UTF-8",                      IDM_ENCODING_UTF8,  CHECKED
+	    MENUITEM "UTF-8 &BOM",                  IDM_ENCODING_UTF8BOM
+	    MENUITEM "U&TF-16",                     IDM_ENCODING_UTF16LE
+	    MENUITEM "UT&F-16 BE",                  IDM_ENCODING_UTF16BE
+    END
+    POPUP "+"
+    BEGIN
+	    MENUITEM "&Auto",            			IDM_VIEW_THEME_AUTO
+	    MENUITEM "&Dark",                  		IDM_VIEW_THEME_DARK
+	    MENUITEM "&Light",                   	IDM_VIEW_THEME_LIGHT
+    END
+    POPUP "+"
+    BEGIN
+	    MENUITEM "&Tab",            			IDM_INDENT_TAB,  CHECKED
+	    MENUITEM "&Spaces",                 	IDM_INDENT_SPACES
+    END
+    POPUP "+"
+    BEGIN
+	    MENUITEM "2",            				IDM_INDENT_2
+	    MENUITEM "4",                 			IDM_INDENT_4,  CHECKED
+	    MENUITEM "8",                 			IDM_INDENT_8
+	    MENUITEM "16",                 			IDM_INDENT_16
+    END
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+GLOBALACC ACCELERATORS
+BEGIN
+	"N", 			IDM_FILE_NEW, 				CONTROL, VIRTKEY
+	"N", 			IDM_FILE_NEWWINDOW, 		CONTROL, SHIFT, VIRTKEY
+	"O", 			IDM_FILE_OPEN, 				CONTROL, VIRTKEY
+	"S", 			IDM_FILE_SAVE, 				CONTROL, VIRTKEY
+	"S", 			IDM_FILE_SAVEAS, 			CONTROL, SHIFT, VIRTKEY
+	"P", 			IDM_FILE_PRINT, 			CONTROL, VIRTKEY
+	"W", 			IDM_FILE_EXIT, 				CONTROL, VIRTKEY
+	VK_F1, 			IDM_HELP_ABOUT, 			VIRTKEY
+	VK_F3, 			IDM_EDIT_FINDNEXT, 			VIRTKEY
+	VK_F3, 			IDM_EDIT_FINDPREV, 			SHIFT, VIRTKEY
+	"G", 			IDM_EDIT_GOTO, 				CONTROL, VIRTKEY
+	"F", 			IDM_EDIT_FIND, 				NOINVERT, CONTROL, VIRTKEY
+	"H", 			IDM_EDIT_REPLACE, 			NOINVERT, CONTROL, VIRTKEY
+//	"E", 			IDM_EDIT_SEARCH_BING, 		CONTROL, VIRTKEY
+	VK_OEM_PLUS, 	IDM_VIEW_ZOOMIN, 			CONTROL, VIRTKEY
+	VK_ADD, 		IDM_VIEW_ZOOMIN, 			CONTROL, VIRTKEY
+	VK_OEM_MINUS, 	IDM_VIEW_ZOOMOUT, 			CONTROL, VIRTKEY
+	VK_SUBTRACT, 	IDM_VIEW_ZOOMOUT, 			CONTROL, VIRTKEY
+	VK_NUMPAD0, 	IDM_VIEW_ZOOMRESET, 		CONTROL, VIRTKEY
+	"0", 			IDM_VIEW_ZOOMRESET, 		CONTROL, VIRTKEY
+
+	VK_F11, 		IDM_VIEW_FULLSCREEN, 		VIRTKEY
+	"T", 			IDM_VIEW_TRANSPARENT, 		ALT, VIRTKEY
+	"A", 			IDM_VIEW_ALWAYSONTOP, 		ALT, VIRTKEY
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_GOTO DIALOGEX 0, 0, 166, 60
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Go To Line"
+FONT 8, "MS Shell Dlg"
+BEGIN
+   LTEXT 			"&Line number:", 1200, 7, 7, 115, 8
+   CONTROL 			"", IDC_GOTO_LINENO, EDIT, ES_LEFT | ES_AUTOHSCROLL | ES_NUMBER | WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP, 7, 18, 151, 14
+   DEFPUSHBUTTON 	"Go To", IDOK, 55, 39, 50, 14
+   PUSHBUTTON 		"Cancel", IDCANCEL, 109, 39, 50, 14
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+//	1 						"Cannot open the %% file.\n\nMake sure a disk is in the drive you specified."
+	IDS_CANNOT_FIND_FILE 	"Cannot find the %% file.\n\nDo you want to create a new file?"
+//	3 						"The text in the %% file has changed.\n\nDo you want to save the changes?"
+	IDS_UNTITLED 			"Untitled"
+//	5						"%1%2 - Notepad"
+	IDS_CANNOT_FIND 		"Cannot find ""%%"""
+//	7 						"Not enough memory available to complete this operation. Quit one or more applications to increase available memory, and then try again."
+	IDS_FILE_TOO_LARGE 		"The %% file is too large for Notepad.\n\nUse another editor to edit the file."
+//	9 						"Notepad"
+//	10 						"Failed to initialize file dialogs. Change the file name and try again."
+//	11 						"Failed to initialize print dialogs. Make sure that your printer is connected properly and use Control Panel to verify that the printer is configured properly."
+//	12 						"Cannot print the %% file. Be sure that your printer is connected properly and use Control Panel to verify that the printer is configured properly."
+//	13 						"Not a valid file name."
+//	14 						"Cannot create the %% file.\n\nMake sure that the path and file name are correct."
+//	15 						"Cannot carry out the Word Wrap command because there is too much text in the file."
+//
+//	16 						"%%"
+//	17 						"notepad.hlp"
+//	18 						"&f"
+//	19 						"Page &p"
+	IDS_TEXT_FILES 			"Text Documents (*.txt)"
+	IDS_ALL_FILES 			"All Files "
+	IDS_OPEN 				"Open"
+	IDS_SAVE_AS 				"Save As"
+//	24 						"You cannot shut down or log off Windows because\nthe Save As dialog box in Notepad is open. Switch to\nNotepad, close this dialog box, and then try shutting\ndown or logging off Windows again."
+//	25 						"Cannot access your printer.\nBe sure that your printer is connected properly and use Control Panel to verify that the printer is configured properly."
+//	26 						"%%\nYou do not have permission to open this file.  See the owner of the file or an administrator to obtain permission."
+//	27 						"%%\n This file contains characters in Unicode format which will be lost if you save this file as an ANSI encoded text file. To keep the Unicode information, click Cancel below and then select one of the Unicode options from the Encoding drop down list. Continue?"
+//	28 						"Page too small to print one line.\nTry printing using smaller font."
+//	29 						"Common Dialog error (0x%04x)"
+//	30 						"Notepad - Goto Line"
+	IDS_LINENO_BEYOND 		"The line number is beyond the total number of lines"
+
+	IDS_EOL_ANSI 			"ANSI"
+	IDS_EOL_UTF16_LE 		"UTF-16 LE"
+	IDS_EOL_UTF16_BE 		"UTF-16 BE"
+	IDS_EOL_UTF8 			"UTF-8"
+//	36 						"Page %d"
+	IDS_STATUS_CARET_INFO 	" Ln %d, Col %d"
+//	38 						" Compressed,"
+//	39 						" Encrypted,"
+//	40 						" Hidden,"
+//	41 						" Offline,"
+//	42 						" ReadOnly,"
+//	43 						" System,"
+//	44 						" File"
+//	45 						"fFpPtTdDcCrRlL"
+//	46 						"&Encoding:"
+//	47 						"Notepad was running in a transaction which has completed.\n\nWould you like to save the %% file non-transactionally?"
+//
+//	48 						"We can’t open this file "
+//	49 						"Either your organization doesn’t allow it, or there’s a problem with the file’s encryption."
+//	50 						"Text Editor"
+//	51 						" Windows (CRLF)"
+//	52 						" Unix (LF)"
+//	53 						" Macintosh (CR)"
+//	54 						" Found next from the bottom"
+//	55 						" Found next from the top"
+//	56 						" %d%%"
+//	57 						"Auto-Detect"
+	IDS_EOL_UTF8_BOM 		"UTF-8 with BOM"
+//	59 						"Status Bar"
+//	60 						" %s"
+//
+//	469 					"Text Document"
+//	470 					"New Text Document"
+//
+//	1037 					"Close"
+//
+//	2305 					"Found the next occurrence of text"
+//	2306 					"Unable to find the next occurrence of text"
+//	2307 					"Replaced the next occurrence of text"
+//	2308 					"Unable to replace the next occurrence of text"
+//	2309 					"Replaced all occurrences of text"
+//
+//	3000 					"Notepad"
+	IDS_SAVE_CHANGES 		"Do you want to save changes to %1?"
+//	3002 					"&Save"
+//	3003 					"Do&n't Save"
+
+//	3100 					"A new version of Notepad is available."
+//	3101 					"Dismiss"
+//	3102 					"Install"
+//	3103 					"Launch"
+END
+
+#endif    // Englisch (USA) resources
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#include "Notepatch.ver"
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
