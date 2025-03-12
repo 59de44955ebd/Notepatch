@@ -2,7 +2,7 @@
 
 Notepatch tries to slightly enhance and fix some flaws of classic Notepad, but following the [KISS principle](https://en.wikipedia.org/wiki/KISS_principle). It's neither [Notepad2](https://github.com/ProgerXP/Notepad2e) nor [Notepad++](https://github.com/notepad-plus-plus/notepad-plus-plus), but still just a small and simple single-document (non-tabbed) b/w text/code editor that doesn't know anything about programming languages and syntax highlighting, there is no Scintilla or the like involved. But it behaves a little more like an actual code editor, e.g. double-clicking selects what you usually want to select, Tab resp. Shift+Tab indents/unindents selected text blocks etc. And it supports dark mode, which classic Notepad does not.
 
-Since MS Notepad is closed source, Notepatch is not really a "patch" but rather a clone, but it uses exactly the same classic Win32 controls (in particular the [Edit control](https://learn.microsoft.com/en-us/windows/win32/controls/edit-controls) as its core) as well as the same menu, dialog and string resources as original Notepad, only slightly adjusting/extending those resources.
+Since MS Notepad is closed source, Notepatch is not really a "patch" but rather a rewrite, but it uses exactly the same classic Win32 controls (in particular the [Edit control](https://learn.microsoft.com/en-us/windows/win32/controls/edit-controls) as its core) as well as the same menu, dialog and string resources as original Notepad, only slightly adjusting/extending those resources.
 
 ## Features
 - Dark mode support (including dialogs) in Windows 10 and 11. The editor's "Theme" can be set to either "Dark", "Light" or "Auto", where the latter means that the editor uses dark mode if and only if the system currently uses a dark theme (for applications).
@@ -20,6 +20,7 @@ Since MS Notepad is closed source, Notepatch is not really a "patch" but rather 
   - Notepatch /p file.txt -- Prints file with default printer and exits
   - Notepatch /pt "file.txt" "[printername]" -- Prints file with specified printer and exits
 - Search/Replace supports "^t" as placeholder for Tab and "^n" as placeholder for line break.
+- Fully localized except for some custom menu items, since it loads menu, dialog and string resources for your current UI language from the corresponding "notepad.exe.mui" file in the Windows folder
 - No "Search with Bing" ;-)
 - Single small (about 200 KB) .exe file using little memory.
 
