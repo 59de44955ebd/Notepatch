@@ -52,6 +52,6 @@ Notepatch runs in Windows 7 and later, but dark mode is only available in Window
 
 ## Code
 
-To compile the application you need Visual Studio 2017 or later, there are no other dependancies.
+To compile the application you need Visual Studio 2017 or later, there are no other dependencies.
 
 Since the code was originally written in plain C and only at the end turned into C++, it's still mostly C and e.g. uses malloc/free instead of the C++ equivalents, I guess this should eventually be refactored.
