@@ -10,10 +10,10 @@ Since MS Notepad is closed source, Notepatch is not really a "patch" but rather 
 - Double-clicking in the text only selects the actual current word (letters, numerals and underscores), like any other editor (except for Notepad) does, but no extra white space or other non-word characters.
 - If a multi-line text block is selected, Tab key indents the selected block, Shift+Tab unindents the selected block, accordig to the current indent mode (Tab or Spaces).
 - The Enter key preserves the current indentation (leading Tabs or Spaces) in the new line.
-- Indent mode can be either Tab or Spaces (so e.g. Python files, which usually use spaces, can also be edited without corrupting them). In Spaces mode the Tab key adds Spaces and the Backspace key removes spaces, both according to the current indent size.
+- Indent mode can be either Tab or Spaces (so e.g. Python scriptd, which usually use Spaces for indentation, can also be edited without corrupting them). In Spaces mode the Tab key adds Spaces and the Backspace key removes spaces, both according to the current indent size.
 - Indent size can be adjusted - 2, 4 (default), 8 or 16 characters - both in Tab and Spaces mode.
 - When multi-line text with Linux (LF) or Mac (CR) line endings is pasted into the editor, the line endings are automatically converted and therefor the text remains in multiple lines
-- Current line ending mode (CRLF, LF, CR), text encoding (ANSI, UTF-8, UTF-8 BOM, UTF-16, UTF-16 BE) and indent mode (Tab, Spaces) can be changed, either via extra menus in the File menu or by right or double clicking the corresponding section in the status bar. Saving the document will then apply the new mode to the file saved on disk.
+- Current line ending mode (CRLF, LF, CR), text encoding (ANSI, UTF-8, UTF-8 BOM, UTF-16, UTF-16 BE) and indent mode (Tab, Spaces) can be changed, either via some extra submenus in the File menu or by right or double clicking the corresponding section in the status bar. Saving the document will then apply the new mode to the file saved on disk.
 - Supports the same command line arguments as original Notepad:
   - Notepatch /a file.txt -- Deactivates auto encoding detection and loads file as ANSI
   - Notepatch /w file.txt -- Deactivates auto encoding detection and loads file as Unicode (UTF-16 LE)
@@ -32,8 +32,8 @@ And that's it.
 *Dark mode (Windows 11)*  
 ![Dialogs in dark mode](screenshots/notepatch-dark.png)
 
-*Dialogs in dark mode (Windows 11)*  
-![Dialogs in dark mode](screenshots/notepatch-dark-dialogs.png)
+*Some dialogs in dark mode (Windows 11)*  
+![Some dialogs in dark mode](screenshots/notepatch-dark-dialogs.png)
 
 
 ## Optional: Replacing Notepad
