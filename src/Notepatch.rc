@@ -110,8 +110,8 @@ BEGIN
     POPUP "+"
     BEGIN
 	    MENUITEM "&Auto",            			IDM_VIEW_THEME_AUTO
-	    MENUITEM "&Dark",                  		IDM_VIEW_THEME_DARK
-	    MENUITEM "&Light",                   	IDM_VIEW_THEME_LIGHT
+	    MENUITEM "&Dark\tAlt+D",          		IDM_VIEW_THEME_DARK
+	    MENUITEM "&Light\tAlt+L",             	IDM_VIEW_THEME_LIGHT
     END
     POPUP "+"
     BEGIN
@@ -161,7 +161,10 @@ BEGIN
 	"T", 			IDM_VIEW_TRANSPARENT, 		ALT, VIRTKEY
 	"A", 			IDM_VIEW_ALWAYSONTOP, 		ALT, VIRTKEY
 
-	"L", 			IDM_VIEW_LINENUMBERS, 		ALT, VIRTKEY
+	"N", 			IDM_VIEW_LINENUMBERS, 		ALT, VIRTKEY
+
+	"D", 			IDM_VIEW_THEME_DARK, 		ALT, VIRTKEY
+	"L", 			IDM_VIEW_THEME_LIGHT, 		ALT, VIRTKEY
 END
 
 /////////////////////////////////////////////////////////////////////////////

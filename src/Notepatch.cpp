@@ -1534,7 +1534,7 @@ void CreateMenus(void)
 
 	// View
 	hSubMenu = GetSubMenu(g_hMenuMain, MENU_INDEX_VIEW);
-	AppendMenu(hSubMenu, MF_STRING, IDM_VIEW_LINENUMBERS, L"Line Numbers\tAlt+L");
+	AppendMenu(hSubMenu, MF_STRING, IDM_VIEW_LINENUMBERS, L"Line Numbers\tAlt+N");
 	AppendMenu(hSubMenu, MF_SEPARATOR, NULL, NULL);
 	AppendMenu(hSubMenu, MF_STRING, IDM_VIEW_FULLSCREEN, L"Fullscreen\tF11");
 	AppendMenu(hSubMenu, MF_STRING, IDM_VIEW_TRANSPARENT, L"Transparent\tAlt+T");
