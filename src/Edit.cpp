@@ -15,13 +15,17 @@
 //##########################################################
 //
 //##########################################################
-Edit::Edit(HWND hWndParent, long m_lControlID, LOGFONT logFont)
+Edit::Edit(HWND hWndParent, long m_lControlID, LOGFONT logFont, BOOL bWordWrap)
 {
+	LONG lStyle = WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_NOHIDESEL;
+	if (!bWordWrap)
+		lStyle = lStyle | WS_HSCROLL;
+
 	m_hWnd = CreateWindowEx(
 		0,
 		WC_EDIT,
 		NULL,
-		WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_NOHIDESEL,
+		lStyle,
 		0, 0, 0, 0,
 		hWndParent,
 		NULL,
@@ -338,7 +342,7 @@ void Edit::SelectAll(void)
 //##########################################################
 void Edit::SetWordWrap(BOOL bFlag)
 {
-	wchar_t *pwszText = GetText();  //0, -1);
+	wchar_t *pwszText = GetText();
 
 	int iPosStart, iPosEnd;
 	SendMessage(m_hWnd, EM_GETSEL, (WPARAM)&iPosStart, (LPARAM)&iPosEnd);
@@ -363,7 +367,7 @@ void Edit::SetWordWrap(BOOL bFlag)
 		rc.right - rc.left, rc.bottom - rc.top,
 		hwndParent,
 		NULL,
-		NULL, //g_hInstance,
+		NULL,
 		NULL
 	);
 

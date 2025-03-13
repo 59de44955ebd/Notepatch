@@ -144,12 +144,14 @@ void SetDark(BOOL bIsDark)
 	else
 		RemoveWindowSubclass(g_hWndStatusbar, &DarkStatusBarClassProc, STATUSBAR_SUBCLASS_ID);
 
+	// Update color of edit's scrollbars
 	SetWindowTheme(g_pEdit->m_hWnd, bIsDark ? L"DarkMode_Explorer" : L"Explorer", NULL);
 
 	DarkMenus(g_bIsDark);
 
 	RedrawWindow(g_hWndMain, 0, 0, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
 
+	// Destroy and recreate existing Find/Replace dialogs, restore previous state
 	if (g_hDlgFind)
 	{
 		BOOL bVisible = IsWindowVisible(g_hDlgFind);
@@ -551,7 +553,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPWSTR lpCmdLine, 
 	CreateStatusbar();
 
 	// Create edit control
-	g_pEdit = new Edit(g_hWndMain, IDC_EDIT, logFont);
+	g_pEdit = new Edit(g_hWndMain, IDC_EDIT, logFont, g_bWordWrap);
 
 	if (g_bIsDark)
 		SetWindowTheme(g_pEdit->m_hWnd, L"DarkMode_Explorer", NULL); // for dark scrollbars
@@ -1473,21 +1475,22 @@ void CreateMenus(void)
 
 	// Edit
 	hSubMenu = GetSubMenu(g_hMenuMain, MENU_INDEX_EDIT);
+	// Remove "Search with Bing..."
 	RemoveMenu(hSubMenu, IDM_EDIT_SEARCH_BING, MF_BYCOMMAND);
 
 	// Format
 	hSubMenu = GetSubMenu(g_hMenuMain, MENU_INDEX_FORMAT);
 	AppendMenu(hSubMenu, MF_SEPARATOR, NULL, NULL);
-//	AppendMenu(hSubMenu, MF_POPUP, (UINT_PTR)GetSubMenu(g_hMenuPopup, 3), L"Indent");
 	AppendMenu(hSubMenu, MF_POPUP, (UINT_PTR)GetSubMenu(g_hMenuPopup, 4), L"Indent Size");
 
-	//View
+	// View
 	hSubMenu = GetSubMenu(g_hMenuMain, MENU_INDEX_VIEW);
 	AppendMenu(hSubMenu, MF_SEPARATOR, NULL, NULL);
 	AppendMenu(hSubMenu, MF_STRING, IDM_VIEW_FULLSCREEN, L"Fullscreen\tF11");
 	AppendMenu(hSubMenu, MF_STRING, IDM_VIEW_TRANSPARENT, L"Transparent\tAlt+T");
 	AppendMenu(hSubMenu, MF_STRING, IDM_VIEW_ALWAYSONTOP, L"Always on Top\tAlt+A");
 
+	// Add "Theme" submenu only in Win 10 and later
 	if (IsWindows10OrGreater())
 	{
 		AppendMenu(hSubMenu, MF_SEPARATOR, NULL, NULL);
@@ -1498,13 +1501,14 @@ void CreateMenus(void)
 	// Help
 	hSubMenu = GetSubMenu(g_hMenuMain, MENU_INDEX_HELP);
 
-	// Change About string (in engl. it's "About Notepad")
+	// Change menu item "About" (in engl. it's e.g. "About Notepad") to neutral "Info"
 	MENUITEMINFO mmi = {};
 	mmi.cbSize = sizeof(MENUITEMINFO);
 	mmi.fMask = MIIM_STRING;
 	mmi.dwTypeData = L"Info\tF1";
-	SetMenuItemInfo(hSubMenu,IDM_HELP_ABOUT, MF_BYCOMMAND, &mmi);
+	SetMenuItemInfo(hSubMenu, IDM_HELP_ABOUT, MF_BYCOMMAND, &mmi);
 
+	// Remove "Help", "Feedback" and separator, so there only the "About" item left
 	RemoveMenu(hSubMenu, IDM_HELP_HELP, MF_BYCOMMAND);
 	RemoveMenu(hSubMenu, IDM_HELP_FEEDBACK, MF_BYCOMMAND);
 	RemoveMenu(hSubMenu, 0, MF_BYPOSITION);

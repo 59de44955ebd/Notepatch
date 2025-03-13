@@ -77,7 +77,7 @@ private:
 	int			m_iDpiY = 96;
 
 public:
-				Edit(HWND hwndParent, long m_lControlID, LOGFONT logFont);
+				Edit(HWND hwndParent, long m_lControlID, LOGFONT logFont, BOOL bWordWrap);
 
 	void		SetFont(LOGFONT logFont);
 	LOGFONT		GetFont(void);
