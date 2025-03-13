@@ -8,6 +8,7 @@ Since Microsoft's Notepad is closed source, Notepatch is not really a "patch" bu
 
 - Dark mode support (including dialogs) in Windows 10 and 11. The editor's "Theme" can be set to either "Dark", "Light" or "Auto", where the latter means that the editor uses dark mode if and only if the system currently uses a dark theme (for applications).
 - View modes (distraction free) "Fullscreen" (F11), "Transparent" (Alt+T) and "Always on Top" (Alt-A) in the "View" menu
+- Supports showing line numbers (mutually exclusive with word wrap)
 - Double-clicking in the text only selects the actual current word (letters, numerals and underscores), like any other editor (except for Notepad) does, but no extra white space or other non-word characters.
 - If a multi-line text block is selected, Tab key indents the selected block, Shift+Tab unindents the selected block, accordig to the current indent mode (Tab or Spaces).
 - The Enter key preserves the current indentation (leading Tabs or Spaces) in the new line.

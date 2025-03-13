@@ -7,6 +7,13 @@
 #define EVENT_CARET_POS_CHANGED 10
 #define EDIT_MAX_TEXT_LEN 0x80000 // 512 KB (Edit control's default: 30.000)
 #define MAX_INDENT_SIZE 64
+#define DEFAULT_MARGIN 4
+
+#define COLOR_LINENUMBERS_BG_LIGHT 0xE4E4E4
+#define COLOR_LINENUMBERS_TEXT_LIGHT 0x2B2B2B
+
+#define COLOR_LINENUMBERS_BG_DARK 0x2B2B2B
+#define COLOR_LINENUMBERS_TEXT_DARK 0x646464
 
 //##############################################################################
 // Enums and structs
@@ -60,24 +67,34 @@ class Edit
 public:
 	HWND 		m_hWnd;
 	BOOL		m_bIndentUseSpaces = FALSE;
+	BOOL		m_bShowLinenos = FALSE;
 
 private:
 	long		m_lControlID;
-	int			m_iMargin = 4;
+	int			m_iMargin = DEFAULT_MARGIN;
 	int			m_iCharWidth = 0;
 	Selection	m_lastSel = { 0, 0 };
 	Selection	m_currentSel = { 0, 0 };
 	LOGFONT		m_logFont;
 	int			m_iFontSize;
 	int 		m_iFontSizeZoom = 0;
-
 	int 		m_iIndentSize = 4;
 	wchar_t		m_wszIndentSpaces[MAX_INDENT_SIZE + 1] = L"    ";
-
 	int			m_iDpiY = 96;
 
+	//For linenumber support
+	HFONT		m_hFont = NULL;
+	int			m_iLineSpacing;
+	int			m_iLinenoWidth = 0;
+	COLORREF 	m_crLinenoBg = COLOR_LINENUMBERS_BG_LIGHT;
+	COLORREF 	m_crLinenoText = COLOR_LINENUMBERS_TEXT_LIGHT;
+
 public:
-				Edit(HWND hwndParent, long m_lControlID, LOGFONT logFont, BOOL bWordWrap);
+				Edit(HWND hwndParent, long m_lControlID, LOGFONT logFont, BOOL bWordWrap, BOOL bShowLinenos);
+
+	void 		SetDark(BOOL bDark);
+
+	void 		ShowLinenumbers(BOOL bShow);
 
 	void		SetFont(LOGFONT logFont);
 	LOGFONT		GetFont(void);
@@ -117,6 +134,10 @@ public:
 	LRESULT 	OnLButtonDblClk(WPARAM wParam, LPARAM lParam);
 	void 		OnLButtonUp(WPARAM wParam, LPARAM lParam);
 	void		OnMouseMove(WPARAM wParam, LPARAM lParam);
+
+	LRESULT		OnVScroll(WPARAM wParam, LPARAM lParam);
+	LRESULT 	OnEraseBkgnd(WPARAM wParam, LPARAM lParam);
+	LRESULT 	OnSize(WPARAM wParam, LPARAM lParam);
 
 private:
 	void 		__CheckCaretPos(void);

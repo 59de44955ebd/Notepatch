@@ -12,11 +12,23 @@
 #define UNITS_PER_INCH 2540
 #define NON_WORD L" \t'\".,:!?-()[]{}+-*=/\\<>#$§%&|`´^"
 
+//#define MAX_LINES 9999
+#define LINENUMBERS_PADDING 8
+#define LINENUMBERS_MAX_LEN 4
+#define LINENUMBER_TEMPLATE L"9999"
+
 //##########################################################
 //
 //##########################################################
-Edit::Edit(HWND hWndParent, long m_lControlID, LOGFONT logFont, BOOL bWordWrap)
+Edit::Edit(HWND hWndParent, long lControlID, LOGFONT logFont, BOOL bWordWrap, BOOL bShowLinenos)
 {
+
+	HDC hdc = GetDC(NULL);
+	m_iDpiY = GetDeviceCaps(hdc, LOGPIXELSY);
+	ReleaseDC(NULL, hdc);
+
+	m_lControlID = lControlID;
+
 	LONG lStyle = WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_NOHIDESEL;
 	if (!bWordWrap)
 		lStyle = lStyle | WS_HSCROLL;
@@ -33,24 +45,50 @@ Edit::Edit(HWND hWndParent, long m_lControlID, LOGFONT logFont, BOOL bWordWrap)
 		NULL
 	);
 
-	m_lControlID = m_lControlID;
 	SetWindowLong(m_hWnd, GWL_ID, m_lControlID);
 
 	SendMessage(m_hWnd, EM_SETLIMITTEXT, EDIT_MAX_TEXT_LEN, 0);
 
-	m_iMargin = 4;
 	SendMessage(m_hWnd, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, (LPARAM)MAKELONG(m_iMargin, m_iMargin));
 
 	SetWindowSubclass(m_hWnd, &__EditSubClassProc, EDIT_SUBCLASS_ID, (DWORD_PTR)this);
-
-	HDC hdc = GetDC(NULL);
-	m_iDpiY = GetDeviceCaps(hdc, LOGPIXELSY);
-	ReleaseDC(NULL, hdc);
 
 	SetFont(logFont);
 
 	UINT uiTabWidth = 4 * m_iIndentSize;
 	SendMessage(m_hWnd, EM_SETTABSTOPS, 1, (LPARAM)&uiTabWidth);
+
+	if (bShowLinenos)
+		ShowLinenumbers(TRUE);
+}
+
+//##########################################################
+//
+//##########################################################
+void Edit::SetDark(BOOL bDark)
+{
+	// Update color of edit's scrollbars
+	SetWindowTheme(m_hWnd, bDark ? L"DarkMode_Explorer" : L"Explorer", NULL);
+
+	m_crLinenoBg = bDark ? COLOR_LINENUMBERS_BG_DARK : COLOR_LINENUMBERS_BG_LIGHT;
+	m_crLinenoText = bDark ? COLOR_LINENUMBERS_TEXT_DARK : COLOR_LINENUMBERS_TEXT_LIGHT;
+
+	// Setting Window theme removes Edit's current formatting rect
+	if (m_bShowLinenos)
+		ShowLinenumbers(TRUE);
+}
+
+//##########################################################
+//
+//##########################################################
+void Edit::ShowLinenumbers(BOOL bShowLinenumbers)
+{
+	m_bShowLinenos = bShowLinenumbers;
+
+	RECT rc;
+	GetClientRect(m_hWnd, &rc);
+	rc.left = m_bShowLinenos ? m_iLinenoWidth + m_iMargin : m_iMargin;
+	SendMessage(m_hWnd, EM_SETRECT, 0, (LPARAM)&rc);
 }
 
 //##########################################################
@@ -59,16 +97,23 @@ Edit::Edit(HWND hWndParent, long m_lControlID, LOGFONT logFont, BOOL bWordWrap)
 void Edit::SetFont(LOGFONT logFont)
 {
 	m_logFont = logFont;
-	HFONT hFont = CreateFontIndirect(&logFont);
+	m_hFont = CreateFontIndirect(&logFont);
 	m_iFontSize = -MulDiv(logFont.lfHeight, 72, m_iDpiY);
-	SendMessage(m_hWnd, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(1, 0));
+	SendMessage(m_hWnd, WM_SETFONT, (WPARAM)m_hFont, MAKELPARAM(1, 0));
 
-    HDC hDc = GetDC(NULL);
-    SelectObject(hDc, hFont);
+    HDC hDC = GetDC(NULL);
+    SelectObject(hDC, m_hFont);
     TEXTMETRIC tm = {};
-    GetTextMetrics(hDc, &tm);
-    ReleaseDC(NULL, hDc);
-    m_iCharWidth = tm.tmAveCharWidth;
+    GetTextMetrics(hDC, &tm);
+	m_iCharWidth = tm.tmAveCharWidth;
+
+	// Calculate linenumber width and lineheight
+	RECT rc = {};
+	DrawText(hDC, LINENUMBER_TEMPLATE, -1, &rc, DT_CALCRECT | DT_LEFT | DT_NOPREFIX);
+	m_iLinenoWidth = rc.right + 2 * LINENUMBERS_PADDING;
+	m_iLineSpacing = rc.bottom;
+
+    ReleaseDC(NULL, hDC);
 }
 
 //##########################################################
@@ -373,7 +418,16 @@ void Edit::SetWordWrap(BOOL bFlag)
 
 	SetWindowLong(m_hWnd, GWL_ID, m_lControlID);
 
-	SetFont(m_logFont);
+	SendMessage(m_hWnd, EM_SETLIMITTEXT, EDIT_MAX_TEXT_LEN, 0);
+
+	SendMessage(m_hWnd, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, (LPARAM)MAKELONG(m_iMargin, m_iMargin));
+
+	SetWindowSubclass(m_hWnd, &__EditSubClassProc, EDIT_SUBCLASS_ID, (DWORD_PTR)this);
+
+	SendMessage(m_hWnd, WM_SETFONT, (WPARAM)m_hFont, MAKELPARAM(1, 0));
+
+	UINT uiTabWidth = 4 * m_iIndentSize;
+	SendMessage(m_hWnd, EM_SETTABSTOPS, 1, (LPARAM)&uiTabWidth);
 
 	SendMessage(m_hWnd, WM_SETTEXT, 0, (LPARAM)pwszText);
 	SendMessage(m_hWnd, EM_SETSEL, iPosStart, iPosEnd);
@@ -517,20 +571,8 @@ BOOL Edit::Replace(const wchar_t *pwszFindWhat, const wchar_t *wszReplaceWith, B
 	BOOL bFound = FALSE;
 	if (bReplaceAll)
 	{
-
-		// This doesn't allow UNDO
-		//bWrap = TRUE;
-		//SendMessage(m_hWnd, WM_SETREDRAW, FALSE, 0);
-		//while (Find(pwszFindWhat, bCaseSensitive, TRUE, bWrap, TRUE))
-		//{
-		//	bFound = TRUE;
-		//	SendMessage(m_hWnd, EM_REPLACESEL, TRUE, (LPARAM)wszReplaceWith);
-		//}
-		//SendMessage(m_hWnd, WM_SETREDRAW, TRUE, 0);
-
 		wchar_t *pwszText = GetText();
 		std::wstring wsTextNew = ReplaceAll(pwszText, pwszFindWhat, wszReplaceWith, &bFound);
-
 		if (bFound)
 		{
 			int iPosStart, iPosEnd;
@@ -739,8 +781,27 @@ void Edit::SetUseSpaces(BOOL m_bIndentUseSpaces)
 void Edit::__UpdateFont(void)
 {
 	m_logFont.lfHeight = -MulDiv(m_iFontSize + m_iFontSizeZoom, m_iDpiY, 72);
-	HFONT hfont = CreateFontIndirect(&m_logFont);
-	SendMessage(m_hWnd, WM_SETFONT, (WPARAM)hfont, MAKELPARAM(1, 0));
+	m_hFont = CreateFontIndirect(&m_logFont);
+	SendMessage(m_hWnd, WM_SETFONT, (WPARAM)m_hFont, MAKELPARAM(1, 0));
+
+	// TEST
+    HDC hDC = GetDC(NULL);
+    SelectObject(hDC, m_hFont);
+
+    TEXTMETRIC tm = {};
+    GetTextMetrics(hDC, &tm);
+	m_iCharWidth = tm.tmAveCharWidth;
+
+	// Calculate linenumber width and lineheight
+	RECT rc = {};
+	DrawText(hDC, LINENUMBER_TEMPLATE, -1, &rc, DT_CALCRECT | DT_LEFT | DT_NOPREFIX);
+	m_iLinenoWidth = rc.right + 2 * LINENUMBERS_PADDING;
+	m_iLineSpacing = rc.bottom;
+
+    ReleaseDC(NULL, hDC);
+
+    if (m_bShowLinenos)
+    	ShowLinenumbers(TRUE);
 }
 
 //##########################################################
@@ -757,8 +818,9 @@ void Edit::__CheckCaretPos(void)
 			m_hWnd,
 			(UINT_PTR)m_lControlID,
 			EVENT_CARET_POS_CHANGED,
+
 			HIWORD(iPos),  // line index
-			(int)((pt.x - m_iMargin) / m_iCharWidth)  // column index
+			(int)((pt.x - m_iMargin - (m_bShowLinenos ? m_iLinenoWidth : 0)) / m_iCharWidth)  // column index
 		};
 		SendMessage(GetParent(m_hWnd), WM_NOTIFY, m_lControlID, (LPARAM)&en);
     }
@@ -788,6 +850,30 @@ LRESULT CALLBACK __EditSubClassProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 
 		case WM_MOUSEMOVE:
 			((Edit*)dwRefData)->OnMouseMove(wParam, lParam);
+			break;
+
+		case WM_SIZE:
+			if (((Edit*)dwRefData)->m_bShowLinenos)
+			{
+				DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				return ((Edit*)dwRefData)->OnSize(wParam, lParam);
+			}
+			break;
+
+		case WM_VSCROLL:
+			if (((Edit*)dwRefData)->m_bShowLinenos)
+			{
+				// Smooth scrolling: Change SB_THUMBTRACK to SB_THUMBPOSITION
+				if ((wParam & 0xFFFF) == SB_THUMBTRACK)
+					wParam = (wParam & ~0xFFFF) | SB_THUMBPOSITION;
+				DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				return ((Edit*)dwRefData)->OnVScroll(wParam, lParam);
+			}
+			break;
+
+		case WM_ERASEBKGND:
+			if (((Edit*)dwRefData)->m_bShowLinenos)
+				return ((Edit*)dwRefData)->OnEraseBkgnd(wParam, lParam);
 			break;
 	}
 
@@ -829,8 +915,7 @@ LRESULT Edit::__HandleTab(WPARAM wParam, LPARAM lParam)
 				if (wcsncmp(pwszLine, pwszIndentSpaces, iTabLen) == 0)
 				{
                 	SendMessage(m_hWnd, EM_SETSEL, iLineStartPos, iLineStartPos + iTabLen);
-                	//SendMessage(m_hWnd, EM_REPLACESEL, FALSE, (LPARAM)L"");
-                	SendMessage(m_hWnd, WM_CLEAR, 0, 0);
+                	SendMessage(m_hWnd, EM_REPLACESEL, FALSE, (LPARAM)L""); // No Undo
                 }
             }
 
@@ -850,7 +935,6 @@ LRESULT Edit::__HandleTab(WPARAM wParam, LPARAM lParam)
         // Select full block
         iPosStart = (int)SendMessage(m_hWnd, EM_LINEINDEX, iLineFrom, 0);
         iPosEnd = (int)SendMessage(m_hWnd, EM_LINEINDEX, lLineTo + 1, 0) - 1;
-
         SendMessage(m_hWnd, EM_SETSEL, iPosStart, iPosEnd);
 
         SendMessage(m_hWnd, WM_SETREDRAW, TRUE, 0);
@@ -1076,23 +1160,35 @@ void Edit::OnMouseMove(WPARAM wParam, LPARAM lParam)
             return;
 
         int iPos = m_currentSel.iTo != m_lastSel.iTo ? m_currentSel.iTo : m_currentSel.iFrom;
+
+        // Gets the index of the line that contains the specified character index in a multiline edit control.
         int iLineIndex = (int)SendMessage(m_hWnd, EM_LINEFROMCHAR, iPos, 0);
-        int iRes = (int)SendMessage(m_hWnd, EM_POSFROMCHAR, iPos, 0);
+
+        // Retrieves the client area coordinates of a specified character in an edit control.
+        // The return value contains the client area coordinates of the character.
+        // The LOWORD contains the horizontal coordinate and the HIWORD contains the vertical coordinate.
+        int iX = (int)LOWORD(SendMessage(m_hWnd, EM_POSFROMCHAR, iPos, 0));
+
 		int iColIndex;
-		if (iRes == -1)
+
+		if (iX == 0xFFFF)
 		{
-			// special case, position is EOF, so go one char back
+			// Special case, position is EOF, so go one char back
 			int iLineIndexNew = (int)SendMessage(m_hWnd, EM_LINEFROMCHAR, iPos - 1, 0);
 			if (iLineIndexNew < iLineIndex)
 				iColIndex = 0;
 			else
 			{
-				iRes = (int)SendMessage(m_hWnd, EM_POSFROMCHAR, iPos - 1, 0);
-				iColIndex = (int)((iRes & 0xFFFF - m_iMargin) / m_iCharWidth + 1);
+				iX = (int)LOWORD(SendMessage(m_hWnd, EM_POSFROMCHAR, iPos - 1, 0));
+				iX -= (m_bShowLinenos ? m_iLinenoWidth + m_iMargin : m_iMargin);
+				iColIndex = (int)(iX / m_iCharWidth);
 			}
 		}
-        else
-            iColIndex = (int)((iRes & 0xFFFF - m_iMargin) / m_iCharWidth);
+		else
+		{
+			iX -= (m_bShowLinenos ? m_iLinenoWidth + m_iMargin : m_iMargin);
+			iColIndex = (int)(iX / m_iCharWidth);
+		}
 
 		EditNotification en = {
 			m_hWnd,
@@ -1104,4 +1200,84 @@ void Edit::OnMouseMove(WPARAM wParam, LPARAM lParam)
 
 		SendMessage(GetParent(m_hWnd), WM_NOTIFY, m_lControlID, (LPARAM)&en);
 	}
+}
+
+//##########################################################
+//
+//##########################################################
+LRESULT Edit::OnVScroll(WPARAM wParam, LPARAM lParam)
+{
+	RECT rc;
+	GetClientRect(m_hWnd, &rc);
+	rc.right = m_iLinenoWidth;
+	InvalidateRect(m_hWnd, &rc, TRUE);
+	return 0;
+}
+
+//##########################################################
+//
+//##########################################################
+LRESULT Edit::OnEraseBkgnd(WPARAM wParam, LPARAM lParam)
+{
+	DefSubclassProc(m_hWnd, WM_ERASEBKGND, wParam, lParam);
+
+	// We can't use the provided HDC since it doesn't allow to update
+	// linenumbers outside the rect marked for erasing
+	//HDC hDC = (HDC)wParam;
+
+	HDC hDC = GetDC(m_hWnd);
+
+	// Fill linenumber margin with background color
+	RECT rc;
+	GetClientRect(m_hWnd, &rc);
+	rc.right = m_iLinenoWidth;
+	HBRUSH hbr = CreateSolidBrush(m_crLinenoBg);
+	FillRect(hDC, &rc, hbr);
+	DeleteObject(hbr);
+
+	// Draw the numbers
+	SetBkMode(hDC, TRANSPARENT);
+	SetTextColor(hDC, m_crLinenoText);
+	SelectObject(hDC, m_hFont);
+
+	int iLinenoStart = (int)SendMessage(m_hWnd, EM_GETFIRSTVISIBLELINE, 0, 0) + 1;
+	int iLinenoEnd = min(
+		(int)SendMessage(m_hWnd, EM_GETLINECOUNT, 0, 0),
+		iLinenoStart + rc.bottom / m_iLineSpacing
+	);
+
+	int bottom = rc.bottom;
+
+	rc.bottom = m_iLineSpacing;
+	rc.right = m_iLinenoWidth - LINENUMBERS_PADDING;
+	wchar_t buf[LINENUMBERS_MAX_LEN + 1];
+	int buf_size = (LINENUMBERS_MAX_LEN + 1) * sizeof(wchar_t);
+	for (int lineno = iLinenoStart; lineno < iLinenoEnd; lineno++)
+	{
+		StringCbPrintfW(buf, buf_size, L"%d", lineno);
+		DrawTextW(hDC, buf, -1, &rc, DT_SINGLELINE | DT_RIGHT | DT_TOP);
+		rc.top += m_iLineSpacing;
+		rc.bottom += m_iLineSpacing;
+	}
+	// Draw last line separately so it's always clipped to the client rect
+	rc.bottom = bottom;
+	StringCbPrintfW(buf, buf_size, L"%d", iLinenoEnd);
+	DrawTextW(hDC, buf, -1, &rc, DT_SINGLELINE | DT_RIGHT | DT_TOP);
+
+	ReleaseDC(m_hWnd, hDC);
+
+	// An application should return nonzero if it erases the background
+	return TRUE;
+}
+
+//##########################################################
+//
+//##########################################################
+LRESULT Edit::OnSize(WPARAM wParam, LPARAM lParam)
+{
+	int cx = LOWORD(lParam);
+	int cy = HIWORD(lParam);
+	RECT rc = { m_iLinenoWidth + m_iMargin, 0, cx, cy };
+	SendMessage(m_hWnd, EM_SETRECT, 0, (LPARAM)&rc);
+	return 0;
 }

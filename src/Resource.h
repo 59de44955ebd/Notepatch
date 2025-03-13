@@ -75,6 +75,8 @@
 #define IDM_VIEW_THEME_DARK				67
 #define IDM_VIEW_THEME_LIGHT			68
 
+#define IDM_VIEW_LINENUMBERS			69
+
 #define IDM_HELP_HELP                  	64
 #define IDM_HELP_FEEDBACK            	66
 #define IDM_HELP_ABOUT                  65

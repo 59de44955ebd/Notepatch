@@ -41,6 +41,8 @@ BOOL			g_bAlwaysOnTop = FALSE;
 BOOL			g_bTransparentMode = FALSE;
 BOOL			g_bModified = FALSE;
 BOOL			g_bWordWrap = FALSE;
+BOOL			g_bShowLinenumbers = FALSE;
+
 BOOL			g_bDialogIgnore = FALSE;
 
 HMENU 			g_hMenuMain;
@@ -144,8 +146,7 @@ void SetDark(BOOL bIsDark)
 	else
 		RemoveWindowSubclass(g_hWndStatusbar, &DarkStatusBarClassProc, STATUSBAR_SUBCLASS_ID);
 
-	// Update color of edit's scrollbars
-	SetWindowTheme(g_pEdit->m_hWnd, bIsDark ? L"DarkMode_Explorer" : L"Explorer", NULL);
+	g_pEdit->SetDark(bIsDark);
 
 	DarkMenus(g_bIsDark);
 
@@ -553,10 +554,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPWSTR lpCmdLine, 
 	CreateStatusbar();
 
 	// Create edit control
-	g_pEdit = new Edit(g_hWndMain, IDC_EDIT, logFont, g_bWordWrap);
-
+	g_pEdit = new Edit(g_hWndMain, IDC_EDIT, logFont, g_bWordWrap, g_bShowLinenumbers);
 	if (g_bIsDark)
-		SetWindowTheme(g_pEdit->m_hWnd, L"DarkMode_Explorer", NULL); // for dark scrollbars
+		g_pEdit->SetDark(TRUE);
 
 	StatusBarUpdateCaret(0, 0);
 	StatusBarUpdateZoom(100);
@@ -699,9 +699,9 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_CTLCOLOREDIT:
 	        if (g_bIsDark && (HWND)lParam == g_pEdit->m_hWnd)
 	        {
-	            SetTextColor((HDC)wParam, DARK_TEXT_COLOR);
-	            SetBkColor((HDC)wParam, DARK_CONTROL_BG_COLOR);
-	            SetDCBrushColor((HDC)wParam, DARK_CONTROL_BG_COLOR);
+	            SetTextColor((HDC)wParam, DARK_EDITOR_TEXT_COLOR);
+	            SetBkColor((HDC)wParam, DARK_EDITOR_BG_COLOR);
+	            SetDCBrushColor((HDC)wParam, DARK_EDITOR_BG_COLOR);
 	            return (LRESULT)GetStockObject(DC_BRUSH);
 	        }
 	        else
@@ -764,6 +764,12 @@ void OnSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 	SetWindowPos(g_pEdit->m_hWnd, NULL, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 
+	//if (g_pEdit->m_bShowLinenos)
+	//{
+	//	RECT rc = { g_pEdit->m_iLinenoWidth + g_pEdit->m_iMargin, 0, cx, cy };
+	//	SendMessage(g_pEdit->m_hWnd, EM_SETRECT, 0, (LPARAM)&rc);
+	//}
+
 	// Right align parts in statusbar
 	SendMessage(g_hWndStatusbar, WM_SIZE, 0, 0);
     int sb_parts[STATUSBAR_NUM_PARTS] = { cx - 480, cx - 340, cx - 290, cx - 170, cx - 70, -1 };
@@ -782,23 +788,39 @@ LRESULT OnCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 	{
 		if (wCommandID == IDC_EDIT)
 		{
-			if (wNotificationCode == EN_CHANGE)
+			switch (wNotificationCode)
 			{
-				BOOL modified = wcscmp(g_wszCurrentFile, g_wszUntitled) == 0 && SendMessage(g_pEdit->m_hWnd, WM_GETTEXTLENGTH, 0, 0) == 0 ? FALSE : TRUE;
-				if (modified != g_bModified)
-				{
-					g_bModified = modified;
-					UpdateWindowTitle();
-				}
+				case EN_CHANGE:
+					{
+						BOOL modified = wcscmp(g_wszCurrentFile, g_wszUntitled) == 0 && SendMessage(g_pEdit->m_hWnd, WM_GETTEXTLENGTH, 0, 0) == 0 ? FALSE : TRUE;
+						if (modified != g_bModified)
+						{
+							g_bModified = modified;
+							UpdateWindowTitle();
+						}
 
-				// Update caret info in statusbar
-		        int iLineIndex = (int)SendMessage(g_pEdit->m_hWnd, EM_LINEFROMCHAR, -1, 0);
-				int iPosStart, iPosEnd;
-				SendMessage(g_pEdit->m_hWnd, EM_GETSEL, (WPARAM)&iPosStart, (LPARAM)&iPosEnd);
-				int iPos = (int)SendMessage(g_pEdit->m_hWnd, EM_LINEINDEX, -1, 0);
-				int iColIndex = iPosStart - iPos;
-				StatusBarUpdateCaret(iLineIndex, iColIndex);
+						// Update caret info in statusbar
+				        int iLineIndex = (int)SendMessage(g_pEdit->m_hWnd, EM_LINEFROMCHAR, -1, 0);
+						int iPosStart, iPosEnd;
+						SendMessage(g_pEdit->m_hWnd, EM_GETSEL, (WPARAM)&iPosStart, (LPARAM)&iPosEnd);
+						int iPos = (int)SendMessage(g_pEdit->m_hWnd, EM_LINEINDEX, -1, 0);
+						int iColIndex = iPosStart - iPos;
+						StatusBarUpdateCaret(iLineIndex, iColIndex);
+					}
+					break;
+
+				case EN_VSCROLL:
+					if (g_pEdit->m_bShowLinenos)
+						g_pEdit->OnVScroll(0, 0);
+					//{
+					//	RECT rc;
+					//	GetClientRect(g_pEdit->m_hWnd, &rc);
+					//	rc.right = g_pEdit->m_iLinenoWidth;
+					//	InvalidateRect(g_pEdit->m_hWnd, &rc, TRUE);
+					//}
+					break;
 			}
+
 		}
 		return 0;
 	}
@@ -847,20 +869,25 @@ LRESULT OnCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		case IDM_FILE_SAVE:
 			if (wcscmp(g_wszCurrentFile, g_wszUntitled) != 0)
 			{
-				SaveFile(g_wszCurrentFile, g_iEncoding, g_iEol);
+				if (SaveFile(g_wszCurrentFile, g_iEncoding, g_iEol))
+				{
+					g_bModified = FALSE;
+					UpdateWindowTitle();
+				}
 				break;
 			}
 			// else fall through
 		case IDM_FILE_SAVEAS:
 			{
-				//DWORD dwEncoding = g_iEncoding;
 				wchar_t *filename = GetSaveFilename(g_wszSaveAs, g_wszCurrentFile, L".txt", g_wszFilter);
 				if (filename)
 				{
-					SaveFile(filename, g_iEncoding, g_iEol);
-					wcscpy_s(g_wszCurrentFile, MAX_PATH, filename);
-					g_bModified = FALSE;
-					UpdateWindowTitle();
+					if (SaveFile(filename, g_iEncoding, g_iEol))
+					{
+						wcscpy_s(g_wszCurrentFile, MAX_PATH, filename);
+						g_bModified = FALSE;
+						UpdateWindowTitle();
+					}
 					free(filename);
 				}
 			}
@@ -1099,6 +1126,12 @@ LRESULT OnCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 				g_pEdit->SetWordWrap(g_bWordWrap);
 				SetWindowTheme(g_pEdit->m_hWnd, g_bIsDark ? L"DarkMode_Explorer" : L"Explorer", NULL);
 				CheckMenuItem(g_hMenuMain, IDM_FORMAT_WORDWRAP, MF_BYCOMMAND | (g_bWordWrap ? MF_CHECKED : MF_UNCHECKED));
+				if (g_bWordWrap && g_bShowLinenumbers)
+				{
+					g_bShowLinenumbers = FALSE;
+					g_pEdit->m_bShowLinenos = FALSE;
+					CheckMenuItem(g_hMenuMain, IDM_VIEW_LINENUMBERS, MF_BYCOMMAND | MF_UNCHECKED);
+				}
 			}
 			break;
 
@@ -1136,6 +1169,22 @@ LRESULT OnCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		//##########################################################
 		//	View
 		//##########################################################
+
+		case IDM_VIEW_LINENUMBERS:
+			{
+				g_bShowLinenumbers = !g_bShowLinenumbers;
+
+				if (g_bShowLinenumbers && g_bWordWrap)
+				{
+					g_bWordWrap = FALSE;
+					g_pEdit->SetWordWrap(FALSE);
+					CheckMenuItem(g_hMenuMain, IDM_FORMAT_WORDWRAP, MF_BYCOMMAND | MF_UNCHECKED);
+				}
+
+				g_pEdit->ShowLinenumbers(g_bShowLinenumbers);
+				CheckMenuItem(g_hMenuMain, IDM_VIEW_LINENUMBERS, MF_BYCOMMAND | (g_bShowLinenumbers ? MF_CHECKED : MF_UNCHECKED));
+			}
+			break;
 
 		case IDM_VIEW_ZOOMIN:
 			StatusBarUpdateZoom(g_pEdit->ZoomIn());
@@ -1485,6 +1534,7 @@ void CreateMenus(void)
 
 	// View
 	hSubMenu = GetSubMenu(g_hMenuMain, MENU_INDEX_VIEW);
+	AppendMenu(hSubMenu, MF_STRING, IDM_VIEW_LINENUMBERS, L"Line Numbers\tAlt+L");
 	AppendMenu(hSubMenu, MF_SEPARATOR, NULL, NULL);
 	AppendMenu(hSubMenu, MF_STRING, IDM_VIEW_FULLSCREEN, L"Fullscreen\tF11");
 	AppendMenu(hSubMenu, MF_STRING, IDM_VIEW_TRANSPARENT, L"Transparent\tAlt+T");
@@ -1717,6 +1767,8 @@ void LoadSettings(int *X, int *Y, int *nWidth, int *nHeight, LOGFONT *lf)
 		g_bShowStatusbar = (BOOL)dwData;
 	if (RegQueryValueEx(hkey, L"bWordWrap", NULL, NULL, (BYTE *)&dwData, &cbData) == ERROR_SUCCESS)
 		g_bWordWrap = (BOOL)dwData;
+	if (RegQueryValueEx(hkey, L"bShowLinenumbers", NULL, NULL, (BYTE *)&dwData, &cbData) == ERROR_SUCCESS)
+		g_bShowLinenumbers = (BOOL)dwData;
 
 	if (RegQueryValueEx(hkey, L"iWindowPosLeft", NULL, NULL, (BYTE *)&dwData, &cbData) == ERROR_SUCCESS)
 		*X = (int)dwData;
@@ -1758,6 +1810,7 @@ void SaveSettings(void)
     RegSetValueEx(hkey, L"iTheme", 0, REG_DWORD, (BYTE *)&g_iTheme, sizeof(g_iTheme));
     RegSetValueEx(hkey, L"bShowStatusbar", 0, REG_DWORD, (BYTE *)&g_bShowStatusbar, sizeof(g_bShowStatusbar));
 	RegSetValueEx(hkey, L"bWordWrap", 0, REG_DWORD, (BYTE *)&g_bWordWrap, sizeof(g_bWordWrap));
+	RegSetValueEx(hkey, L"bShowLinenumbers", 0, REG_DWORD, (BYTE *)&g_bShowLinenumbers, sizeof(g_bWordWrap));
 
     RECT rc;
 	ShowWindow(g_hWndMain, SW_RESTORE);
