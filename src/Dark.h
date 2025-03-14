@@ -1,10 +1,8 @@
-﻿#ifndef DARK_H
-#define DARK_H
+﻿#pragma once
 
 #include <windows.h>
 #include <uxtheme.h>
 #include <dwmapi.h>
-#include <stdio.h>
 
 #define DIALOG_HANDLE_CONTROL_MESSAGES() \
 		case WM_CTLCOLORDLG: \
@@ -40,40 +38,27 @@
 
 #define MAX_WIN_TEXT_LEN 256
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
-//#define TBCDRF_USECDCOLORS 0x00800000
 
 #define STATUSBAR_SUBCLASS_ID 1
 #define CHECKBOX_SUBCLASS_ID 2
 #define COMBOBOX_SUBCLASS_ID 3
 #define COMBOBOXEX_SUBCLASS_ID 4
 
-//#define CUSTOMIZETOOLBAR_SUBCLASS_ID 5
-
 // Colors for dark mode
 #define DARK_BG_COLOR 0x202020
-//#define DARK_BG_COLOR 0x2B2B2B
-
 #define DARK_TEXT_COLOR 0XE0E0E0
 #define DARK_TEXT_COLOR_DISABLED 0x646464
 #define DARK_TEXT_COLOR_LINK 0xE9BD5B
-
-#define DARK_MENUBAR_BG_COLOR 0x202020 //0x2B2B2B;
+#define DARK_MENUBAR_BG_COLOR 0x202020
 #define DARK_MENUBAR_BG_COLOR_HOT 0X3E3E3E
-
-#define DARK_CONTROL_BG_COLOR 0x2B2B2B //0x333333
+#define DARK_CONTROL_BG_COLOR 0x2B2B2B
 #define DARK_CONTROL_BG_COLOR_HOT 0x454545
 #define DARK_CONTROL_BG_COLOR_SELECTED 0x666666
 #define DARK_CONTROL_BORDER_COLOR 0x9B9B9B
-
-// previously was DARK_CONTROL_BG_COLOR
 #define DARK_EDITOR_BG_COLOR 0x141414
-// previously was DARK_TEXT_COLOR
 #define DARK_EDITOR_TEXT_COLOR 0xFFFFFF
-
 #define DARK_SEPARATOR_COLOR 0x636363
-//#define DARK_TOOLBAR_BUTTON_BORDER_COLOR 0x636363
-//#define DARK_TOOLBAR_BUTTON_BG_COLOR 0x424242
-//#define DARK_TOOLBAR_BUTTON_ROLLOVER_BG_COLOR 0x434343
+#define DARK_EDIT_BG_COLOR 0x383838
 
 // window messages related to menu bar drawing
 #define WM_UAHDESTROYWINDOW    0x0090	// handled by DefWindowProc
@@ -174,6 +159,4 @@ LRESULT DarkHandleMenuMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

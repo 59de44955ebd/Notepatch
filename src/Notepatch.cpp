@@ -43,7 +43,7 @@ BOOL			g_bModified = FALSE;
 BOOL			g_bWordWrap = FALSE;
 BOOL			g_bShowLinenumbers = FALSE;
 
-BOOL			g_bDialogIgnore = FALSE;
+//BOOL			g_bDialogIgnore = FALSE;
 
 HMENU 			g_hMenuMain;
 HMENU 			g_hMenuPopup;
@@ -562,8 +562,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPWSTR lpCmdLine, 
 	StatusBarUpdateZoom(100);
 	StatusBarUpdateIndentType(g_iIndentType);
 
-	// Hook for finding and adjusting message boxes
-	g_hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, (HOOKPROC)MessageBoxHookProc, 0, GetCurrentThreadId());
+	// Hook for finding and adjusting dialogs
+	g_hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, (HOOKPROC)DialogHookProc, 0, GetCurrentThreadId());
 
 	SetFocus(g_pEdit->m_hWnd);
 
@@ -932,14 +932,12 @@ LRESULT OnCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		        psd.ptPaperSize = g_ptPrintPaperSize;
 		        psd.rtMargin = g_rcPrintMargins;
 		        psd.lpfnPageSetupHook = PageSetupDlgProc; // LPPAGESETUPHOOK
-		        g_bDialogIgnore = TRUE;
 				if (PageSetupDlg(&psd))
 				{
 					g_ptPrintPaperSize.x = psd.ptPaperSize.x;
 					g_ptPrintPaperSize.y = psd.ptPaperSize.y;
 					SetRect(&g_rcPrintMargins, psd.rtMargin.left, psd.rtMargin.top, psd.rtMargin.right, psd.rtMargin.bottom);
 				}
-				g_bDialogIgnore = FALSE;
 				SetFocus(g_pEdit->m_hWnd);
 		    }
 			break;
@@ -956,10 +954,7 @@ LRESULT OnCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 				pdlg.nToPage = 1;
 				pdlg.nMinPage = 1;
 				pdlg.nMaxPage = 0xffff;
-
-				g_bDialogIgnore = TRUE;
 				BOOL bOk = PrintDlg(&pdlg);
-				g_bDialogIgnore = FALSE;
 				if (bOk)
 					g_pEdit->Print(pdlg.hDC, g_ptPrintPaperSize, g_rcPrintMargins, PathFindFileName(g_wszCurrentFile));
 				SetFocus(g_pEdit->m_hWnd);
@@ -1078,7 +1073,6 @@ LRESULT OnCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 				ShowWindow(g_hDlgFind, SW_HIDE);
 			else if (g_hDlgReplace && IsWindowVisible(g_hDlgReplace))
 				ShowWindow(g_hDlgReplace, SW_HIDE);
-			g_bDialogIgnore = TRUE;
 			DialogBoxParam(
 				g_hModule,
 				MAKEINTRESOURCE(IDD_GOTO),
@@ -1086,7 +1080,6 @@ LRESULT OnCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 				GotoDlgProc,
 				0
 			);
-			g_bDialogIgnore = FALSE;
 			break;
 
 		case IDM_EDIT_TIMEDATE:
@@ -1144,10 +1137,8 @@ LRESULT OnCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 				LOGFONT lf = g_pEdit->GetFont();
 				cf.lpLogFont = &lf;
 				cf.lpfnHook = ChooseFontDlgProc;  // LPCFHOOKPROC
-				g_bDialogIgnore = TRUE;
 		       	if (ChooseFont(&cf))
 					g_pEdit->SetFont(*cf.lpLogFont);
-				g_bDialogIgnore = FALSE;
 				SetFocus(g_pEdit->m_hWnd);
 			}
 			break;

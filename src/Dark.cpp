@@ -9,11 +9,10 @@ using fnSetPreferredAppMode = PreferredAppMode(WINAPI*)(PreferredAppMode appMode
 using fnFlushMenuThemes = void (WINAPI*)();
 
 //##########################################################
-// DarkModeInit
+//
 //##########################################################
 void DarkMenus(BOOL flag)
 {
-	// Dark menus and dark scrollbars
 	HMODULE hUxtheme = LoadLibraryEx(L"uxtheme.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (hUxtheme)
 	{
@@ -34,8 +33,7 @@ void DarkWindowTitleBar(HWND hWnd, BOOL flag)
 {
 	INT value = flag ? 1 : 0;
 	DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
-
-	// For Windows 10
+	// For Win 10, not needed in Win 11
 	SendMessage(hWnd, WM_NCACTIVATE, FALSE, 0);
 	SendMessage(hWnd, WM_NCACTIVATE, TRUE, 0);
 }
@@ -92,12 +90,11 @@ void DarkDialogInit(HWND hDlg)
 
 					// Add static with original button text and original font - but this one can have a custom color (white) which is set in WM_CTLCOLORSTATIC
 					HWND hWndStatic = CreateWindowEx(
-						0, //WS_EX_TRANSPARENT,
+						0,
 						WC_STATIC,
 						szWinTextClean,
 						WS_CHILD | SS_SIMPLE | WS_VISIBLE,
 
-						//17, //
 						nButtonType == BS_GROUPBOX ? 9 : 17,
 						nButtonType == BS_GROUPBOX ? 0 : 3,
 
@@ -116,9 +113,7 @@ void DarkDialogInit(HWND hDlg)
 
 					SetWindowPos(hWndStatic, HWND_TOPMOST, 0, 0, 0, 0, SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOSIZE);
 
-					// Hide original (black) checkbox/radiobutton text by resizing the control
 					if (nButtonType != BS_GROUPBOX)
-						//SetWindowPos(hWnd, 0, 0, 0, 16, rc.bottom - rc.top, SWP_NOZORDER | SWP_NOMOVE);
 						SetWindowText(hWnd, L"");
 
 					SetWindowSubclass(hWnd, &DarkCheckBoxClassProc, CHECKBOX_SUBCLASS_ID, 0);
@@ -129,14 +124,12 @@ void DarkDialogInit(HWND hDlg)
 			{
 				SetWindowTheme(hWnd, L"DarkMode_CFD", NULL);
 
-		        // find internal listbox (ComboLBox)
+		        // Find internal listbox (ComboLBox)
 		        COMBOBOXINFO ci;
 		        ci.cbSize = sizeof(COMBOBOXINFO);
 		        SendMessage(hWnd, CB_GETCOMBOBOXINFO, 0, (LPARAM)&ci);
 		        if (ci.hwndList)
 		        {
-		        	//DBGS(L"ComboBox->ComboLBox");
-
 					// Dark scrollbars for the internal Listbox (ComboLBox)
                 	SetWindowTheme(ci.hwndList, L"DarkMode_Explorer", NULL);
 
@@ -148,39 +141,15 @@ void DarkDialogInit(HWND hDlg)
 					}
                 }
 
-//		        if (ci.hwndItem)
-//		        {
-//		        	DBGS(L"ComboBox->Edit");
-//
-//					SetWindowTheme(ci.hwndItem, L"DarkMode_Explorer", NULL);
-//
-//					ex_style = GetWindowLong(ci.hwndItem, GWL_EXSTYLE);
-//					if (ex_style & WS_EX_CLIENTEDGE)
-//					{
-//						SetWindowLong(ci.hwndItem, GWL_EXSTYLE, ex_style & ~WS_EX_CLIENTEDGE   & ~WS_EX_STATICEDGE);
-//						//SetWindowLong(ci.hwndItem, GWL_STYLE, GetWindowLong(ci.hwndItem, GWL_STYLE) | WS_BORDER);
-//						SetWindowLong(ci.hwndItem, GWL_STYLE, WS_VISIBLE | WS_CHILD);
-//					}
-//					SetWindowLong(ci.hwndItem, GWL_STYLE, WS_VISIBLE | WS_CHILD);
-//
-//					SetWindowSubclass(ci.hwndItem, &__DarkComboBoxEditClassProc, COMBOBOX_SUBCLASS_ID, 0);
-//		        }
-
 				SetWindowSubclass(hWnd, &DarkComboBoxClassProc, COMBOBOX_SUBCLASS_ID, 0);
 			}
 
 			else if (wcscmp(lpClassName, WC_COMBOBOXEX) == 0)
 			{
-		        // find internal combobox control
+		        // Find internal combobox control
 		        HWND hWndComboBox = (HWND)SendMessage(hWnd, CBEM_GETCOMBOCONTROL, 0, 0);
 				SetWindowTheme(hWndComboBox, L"DarkMode_CFD", NULL);
 				SetWindowSubclass(hWndComboBox, &DarkComboBoxExClassProc, COMBOBOXEX_SUBCLASS_ID, 0);
-
-		        // find internal edit control
-//		        COMBOBOXINFO ci;
-//		        ci.cbSize = sizeof(COMBOBOXINFO);
-//		        SendMessage(hwnd_combobox, CB_GETCOMBOBOXINFO, 0, (LPARAM)&ci);
-//		        SetWindowTheme(ci.hwndItem, L"DarkMode_Explorer", NULL);
 			}
 
 			else if (wcscmp(lpClassName, WC_LISTVIEW) == 0)
@@ -207,18 +176,13 @@ void DarkDialogInit(HWND hDlg)
 					SetWindowLong(hWnd, GWL_EXSTYLE, ex_style & ~WS_EX_CLIENTEDGE & ~WS_EX_STATICEDGE);
 					SetWindowLong(hWnd, GWL_STYLE, style | WS_BORDER);
 
-					// make a little smaller and move to the bottom
+					// Make a little smaller and move to the bottom
 					RECT rc;
 					GetWindowRect(hWnd, &rc);
 					MapWindowPoints(NULL, hDlg, (LPPOINT)&rc, 2);
 					SetWindowPos(hWnd, 0,
-
-//						rc.left, rc.top + 2,
-//						rc.right - rc.left, rc.bottom - rc.top - 4,
-
 						rc.left + 1, rc.top,
 						rc.right - rc.left - 2, rc.bottom - rc.top,
-
 						SWP_NOZORDER | SWP_FRAMECHANGED
 					);
 				}
@@ -236,31 +200,24 @@ void DarkDialogInit(HWND hDlg)
 
 			else if (wcscmp(lpClassName, WC_LISTBOX) == 0)
 			{
-				//SetWindowTheme(hwnd, L"DarkMode_Explorer", NULL);
-
 				ex_style = GetWindowLong(hWnd, GWL_EXSTYLE);
 				if (ex_style & WS_EX_CLIENTEDGE)
 				{
 					SetWindowLong(hWnd, GWL_EXSTYLE, ex_style & ~WS_EX_CLIENTEDGE);
-					//SetWindowLong(hwnd, GWL_STYLE, style | WS_BORDER);
 				}
 			}
 
 			else if (wcscmp(lpClassName, WC_TREEVIEW) == 0)
 			{
 				SetWindowTheme(hWnd, L"DarkMode_Explorer", NULL);
-
-				//SetWindowLongPtrA(hwnd, GWL_EXSTYLE, GetWindowLongPtrA(hwnd, GWL_EXSTYLE) & ~WS_EX_NOPARENTNOTIFY);
 				SendMessage(hWnd, TVM_SETBKCOLOR, 0, (LPARAM)DARK_CONTROL_BG_COLOR);
 				SendMessage(hWnd, TVM_SETTEXTCOLOR, 0, (LPARAM)DARK_TEXT_COLOR);
-				//TreeView_SetTextColor(hwnd, TEXT_COLOR_DARK);
 			}
 
 			else if (wcscmp(lpClassName, UPDOWN_CLASS) == 0)
 			{
 				SetWindowTheme(hWnd, L"DarkMode_Explorer", NULL);
 			}
-
 		}
 
 		hWnd = ::GetNextWindow(hWnd, GW_HWNDNEXT);
@@ -332,17 +289,6 @@ LRESULT DarkOnCtlColorEdit(HDC hdc)
 	SetDCBrushColor(hdc, DARK_BG_COLOR);
 	return (LRESULT)GetStockObject(DC_BRUSH);
 }
-
-//##########################################################
-//
-//##########################################################
-//LRESULT DarkOnCtlColorEditColorListBox(HDC hdc)
-//{
-//	SetTextColor(hdc, DARK_TEXT_COLOR);
-//	SetBkColor(hdc, DARK_CONTROL_BG_COLOR);
-//	SetDCBrushColor(hdc, DARK_CONTROL_BG_COLOR);
-//	return (LRESULT)GetStockObject(DC_BRUSH);
-//}
 
 //##########################################################
 //
@@ -452,10 +398,6 @@ LRESULT CALLBACK DarkComboBoxClassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	switch(uMsg)
 	{
 		case WM_CTLCOLORLISTBOX:
-			// 9053 = 0x235D
-			//DBGI(GetWindowLong((HWND)lParam, GWL_STYLE) & LBS_OWNERDRAWFIXED);//9053);
-			//DBGI(GetWindowLong((HWND)lParam, GWL_STYLE) & LBS_OWNERDRAWVARIABLE);
-
 			// This makes the internal listbox having dark BG and light text,
 			// but only if not custom drawn
 			if (!(GetWindowLong((HWND)lParam, GWL_STYLE) & LBS_OWNERDRAWFIXED))
@@ -471,84 +413,21 @@ LRESULT CALLBACK DarkComboBoxClassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 			break;
 
 		case WM_CTLCOLOREDIT:
-			//return DarkOnCtlColorEdit((HDC)wParam);
-
 			SetTextColor((HDC)wParam, DARK_TEXT_COLOR);
-			SetBkColor((HDC)wParam, 0x383838);
-			SetDCBrushColor((HDC)wParam, 0x383838);
+			SetBkColor((HDC)wParam, DARK_EDIT_BG_COLOR);
+			SetDCBrushColor((HDC)wParam, DARK_EDIT_BG_COLOR);
 			return (LRESULT)GetStockObject(DC_BRUSH);
 
-		//case WM_NCPAINT:
-		//	{
-		//		DBGS(L"WM_NCPAINT");
-
-		//		HDC hdc = GetWindowDC(hWnd);
-		//		//HDC hdc = GetDCEx(hWnd, (HRGN)wParam, DCX_WINDOW | DCX_INTERSECTRGN);
-
-		//		//   SetDCBrushColor((HDC)wParam, 0x383838);
-		//		//   SetDCPenColor((HDC)wParam, 0x383838);
-		//		   //SetBkColor((HDC)wParam, 0x0000FF);
-
-		//		RECT rc = { -1, -1, 200, 200 };
-		//		//GetWindowRect(hWnd, &rc);
-		//		GetClientRect(hWnd, &rc);
-		//		HBRUSH hbr = CreateSolidBrush(0x00FFFF); //DARK_BG_COLOR
-		//		FillRect(hdc, &rc, hbr);
-		//		DeleteObject(hbr);
-
-		//		ReleaseDC(hWnd, hdc);
-
-		//		//An application returns zero if it processes this message.
-		//		return 0;
-		//	}
-		//	break;
-
-		//case WM_ERASEBKGND:
-		//	{
-		//        RECT rc;
-		//        GetClientRect(hWnd, &rc);
-		//        HBRUSH hbr = CreateSolidBrush(0x0000FF); //DARK_BG_COLOR
-		//        FillRect((HDC)wParam, &rc, hbr);
-		//        DeleteObject(hbr);
-		//        return 1;
-		//    }
-
 		case WM_DRAWITEM:
-			//DBGS(L"WM_DRAWITEM");
 			{
 				DRAWITEMSTRUCT *di = (DRAWITEMSTRUCT*)lParam;
 				if (!(di->itemState & ODS_SELECTED))
 				{
-					//SendMessage(s_hwndListBox, WM_SETREDRAW, FALSE, 0);
-
 					DefSubclassProc(hWnd, uMsg, wParam, lParam);
-
 					DRAWITEMSTRUCT *di = (DRAWITEMSTRUCT*)lParam;
-
-			  //      wchar_t buf[MAX_PATH];
-			  //      COMBOBOXEXITEM cbei = {};
-			  //      cbei.mask = CBEIF_TEXT | CBEIF_IMAGE;  //| CBEIF_SELECTEDIMAGE
-			  //      cbei.cchTextMax = MAX_PATH;
-					//cbei.pszText = buf;
-			  //      cbei.iItem = di->itemID;
-
-					//DBGI(di->rcItem.right - di->rcItem.left);
-
-					//SetTextColor(di->hDC, DARK_TEXT_COLOR);
-					//SetBkColor(di->hDC, di->itemState & ODS_SELECTED ? GetSysColor(COLOR_HIGHLIGHT) : DARK_CONTROL_BG_COLOR);
-
-					//SetBkColor(di->hDC, 0x0000FF);
-
-					//DBGI(di->itemState);
-					//if (!(di->itemState & ODS_SELECTED))
-						InvertRect(di->hDC, &di->rcItem);
-
-					//SendMessage(s_hwndListBox, WM_SETREDRAW, TRUE, 0);
+					InvertRect(di->hDC, &di->rcItem);
 					return TRUE;
 				}
-				//else //if (di->itemState & ODS_COMBOBOXEDIT)
-					//DBGS(L"ODS_COMBOBOXEDIT");
-					//DBGI(di->itemState);
 	        }
 
 	}
@@ -570,7 +449,7 @@ LRESULT CALLBACK DarkComboBoxExClassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 	        DRAWITEMSTRUCT *di = (DRAWITEMSTRUCT*)lParam;
 	        wchar_t buf[MAX_PATH];
 	        COMBOBOXEXITEM cbei = {};
-	        cbei.mask = CBEIF_TEXT | CBEIF_IMAGE;  //| CBEIF_SELECTEDIMAGE
+	        cbei.mask = CBEIF_TEXT | CBEIF_IMAGE;
 	        cbei.cchTextMax = MAX_PATH;
 			cbei.pszText = buf;
 	        cbei.iItem = di->itemID;

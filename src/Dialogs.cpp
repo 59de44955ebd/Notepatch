@@ -14,21 +14,30 @@
 #include "Notepatch.h"
 #include "Resource.h"
 
+#define MSGBOX_BOTTOM_HEIGHT 42
+#define MSGBOX_SUBCLASS_ID 1
+
+HHOOK g_hHook;
+
 extern HWND			g_hWndMain;
 extern HINSTANCE 	g_hInstance;
 extern HMODULE 		g_hModule;
 extern BOOL 		g_bIsDark;
 extern Edit*		g_pEdit;
-extern BOOL 		g_bDialogIgnore;
 
 extern wchar_t 		g_wszFindWhat[MAX_SEARCH_REPLACE_LEN];
 extern wchar_t 		g_wszReplaceWith[MAX_SEARCH_REPLACE_LEN];
 
-typedef struct tagMSGBOX
+enum DialogType
 {
-	int		iType;
-	LPWSTR	lpstrMessage;
-} MSGBOX, *LPMSGBOX;
+	DIALOG_OTHER = 0,
+	DIALOG_CUSTOM_PROC,
+	DIALOG_OFN
+};
+
+// Used in DialogHookProc to handle dialogs in dark mode according to their flavor
+static DialogType		g_iDialogType = DIALOG_OTHER;
+
 
 //##########################################################
 //
@@ -74,7 +83,7 @@ UINT_PTR ChooseFontDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 		case WM_INITDIALOG:
-			//SetWindowLongPtr(hwnd, GWLP_USERDATA, CUSTOM_DIALOG);
+			g_iDialogType = DIALOG_CUSTOM_PROC;
 			if (g_bIsDark)
 				DarkDialogInit(hDlg);
 			CenterDialog(hDlg);
@@ -94,6 +103,7 @@ UINT_PTR PageSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 		case WM_INITDIALOG:
+			g_iDialogType = DIALOG_CUSTOM_PROC;
 			if (g_bIsDark)
 				DarkDialogInit(hDlg);
 			CenterDialog(hDlg);
@@ -113,6 +123,7 @@ UINT_PTR PrintDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 		case WM_INITDIALOG:
+			g_iDialogType = DIALOG_CUSTOM_PROC;
 			if (g_bIsDark)
 				DarkDialogInit(hDlg);
 			CenterDialog(hDlg);
@@ -135,8 +146,7 @@ UINT_PTR CALLBACK FindDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 	{
 		case WM_INITDIALOG:
 			{
-				SetWindowLongPtr(hDlg, GWLP_USERDATA, CUSTOM_DIALOG);
-
+				g_iDialogType = DIALOG_CUSTOM_PROC;
 				s_hwndWrap = GetDlgItem(hDlg, IDC_FIND_WRAP_AROUND); // Win 11 only?
 				if (s_hwndWrap)
 				{
@@ -216,7 +226,7 @@ UINT_PTR CALLBACK ReplaceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	{
 		case WM_INITDIALOG:
 			{
-				SetWindowLongPtr(hDlg, GWLP_USERDATA, CUSTOM_DIALOG);
+				g_iDialogType = DIALOG_CUSTOM_PROC;
 
 				s_hwndWrap = GetDlgItem(hDlg, IDC_FIND_WRAP_AROUND); // Win 11 only?
 				if (s_hwndWrap)
@@ -344,6 +354,7 @@ INT_PTR CALLBACK GotoDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 		case WM_INITDIALOG:
+			g_iDialogType = DIALOG_CUSTOM_PROC;
 			if (g_bIsDark)
 				DarkDialogInit(hDlg);
 			SetDlgItemInt(hDlg, IDC_GOTO_LINENO, (int)SendMessage(g_pEdit->m_hWnd, EM_LINEFROMCHAR, -1, 0) + 1, FALSE);
@@ -383,14 +394,10 @@ INT_PTR CALLBACK GotoDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-HHOOK g_hHook;
-
-#define MSGBOX_SUBCLASS_ID 1
-
 //##########################################################
 //
 //##########################################################
-LRESULT MessageBoxHookProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT DialogHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode < 0)
         return CallNextHookEx(g_hHook, nCode, wParam, lParam);
@@ -398,12 +405,21 @@ LRESULT MessageBoxHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     HHOOK hook = g_hHook;
 	wchar_t wszClassName[10];
 	GetClassName(msg->hwnd, wszClassName, 10);
-	if (!g_bDialogIgnore && wcscmp(wszClassName, L"#32770") == 0)
+
+	if (wcscmp(wszClassName, L"#32770") == 0)
 	{
 		switch (msg->message)
 		{
 		case WM_INITDIALOG:
-			if (GetWindowLongPtr(msg->hwnd, GWLP_USERDATA) != CUSTOM_DIALOG)
+			if (g_iDialogType == DIALOG_OFN)
+			{
+				if (g_bIsDark)
+				{
+					DarkMenus(TRUE);
+					SendMessage(msg->hwnd, WM_SETTINGCHANGE, 0, (LPARAM)L"ImmersiveColorSet");
+				}
+			}
+			else if (g_iDialogType == DIALOG_OTHER)
 			{
 				CenterDialog(msg->hwnd);
 				if (g_bIsDark)
@@ -412,9 +428,11 @@ LRESULT MessageBoxHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 					SetWindowSubclass(msg->hwnd, &MsgBoxClassProc, MSGBOX_SUBCLASS_ID, NULL);
 				}
 			}
+			g_iDialogType = DIALOG_OTHER;
 			break;
 		}
 	}
+
     return CallNextHookEx(hook, nCode, wParam, lParam);
 }
 
@@ -429,7 +447,6 @@ LRESULT CALLBACK MsgBoxClassProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		{
 			RECT rc;
 			GetClientRect(hDlg, &rc);
-//			rc.bottom -= 42;
 			HBRUSH hbr = CreateSolidBrush(DARK_CONTROL_BG_COLOR);
 			FillRect((HDC)wParam, &rc, hbr);
 			DeleteObject(hbr);
@@ -443,8 +460,8 @@ LRESULT CALLBACK MsgBoxClassProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
         	// Make lower part with buttons darker
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hDlg, &ps);
-            HBRUSH hbr = CreateSolidBrush(0x202020);
-			ps.rcPaint.top = ps.rcPaint.bottom - 42;
+            HBRUSH hbr = CreateSolidBrush(DARK_BG_COLOR);
+			ps.rcPaint.top = ps.rcPaint.bottom - MSGBOX_BOTTOM_HEIGHT;
             FillRect(hdc, &ps.rcPaint, hbr);
             DeleteObject(hbr);
             EndPaint(hDlg, &ps);
@@ -487,9 +504,8 @@ wchar_t *GetOpenFilename(wchar_t* title, wchar_t* default_name, wchar_t* default
     ofn.lpstrDefExt = default_ext;
     ofn.lpstrFilter = filter;
     ofn.Flags = OFN_ENABLESIZING | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_EXPLORER;
-	g_bDialogIgnore = TRUE;
+	g_iDialogType = DIALOG_OFN;
 	BOOL bOk = GetOpenFileName(&ofn);
-	g_bDialogIgnore = FALSE;
 	if (bOk)
 		return file_buffer;
 
@@ -514,9 +530,8 @@ wchar_t *GetSaveFilename(wchar_t* title, wchar_t* default_name, wchar_t* default
     ofn.lpstrDefExt = default_ext;
     ofn.lpstrFilter = filter;
     ofn.Flags = OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
-	g_bDialogIgnore = TRUE;
+	g_iDialogType = DIALOG_OFN;
 	BOOL bOk = GetSaveFileName(&ofn);
-	g_bDialogIgnore = FALSE;
 	if (bOk)
 		return file_buffer;
 

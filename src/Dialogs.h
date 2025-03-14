@@ -1,3 +1,5 @@
+#pragma once
+
 #include <windows.h>
 
 #define CUSTOM_DIALOG 666
@@ -13,7 +15,7 @@ UINT_PTR CALLBACK ReplaceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 //typedef INT_PTR(CALLBACK* DLGPROC)(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK GotoDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-LRESULT MessageBoxHookProc(int nCode, WPARAM wParam, LPARAM lParam);
+LRESULT DialogHookProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 //typedef LRESULT (CALLBACK *SUBCLASSPROC)(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 LRESULT CALLBACK MsgBoxClassProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
