@@ -687,12 +687,12 @@ void Edit::SetTabSize(int iNewTabSize)
 //##########################################################
 //
 //##########################################################
-void Edit::SetUseSpaces(BOOL m_bIndentUseSpaces)
+void Edit::SetUseSpaces(BOOL bIndentUseSpaces)
 {
-	if (m_bIndentUseSpaces == m_bIndentUseSpaces)
+	if (m_bIndentUseSpaces == bIndentUseSpaces)
 		return;
 
-	m_bIndentUseSpaces = m_bIndentUseSpaces;
+	m_bIndentUseSpaces = bIndentUseSpaces;
 
 	wchar_t *pwszText = GetText();
 	std::wstring wsText = pwszText;

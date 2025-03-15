@@ -43,8 +43,6 @@ BOOL			g_bModified = FALSE;
 BOOL			g_bWordWrap = FALSE;
 BOOL			g_bShowLinenumbers = FALSE;
 
-//BOOL			g_bDialogIgnore = FALSE;
-
 HMENU 			g_hMenuMain;
 HMENU 			g_hMenuPopup;
 
@@ -55,7 +53,7 @@ int				g_iIndentSize = 4;
 
 int				g_iTheme = THEME_AUTO;
 
-POINT 			g_ptPrintPaperSize = { 21000, 29700 };  // in mm/100
+POINT 			g_ptPrintPaperSize = { 21000, 29700 };  		// in mm/100 (Din A4)
 RECT 			g_rcPrintMargins = { 1000, 1500, 1000, 1500 };  // in mm/100
 
 // Resource Strings
@@ -68,7 +66,7 @@ wchar_t 		g_wszSaveAs[MAX_RESOURCE_TEXT_LEN];
 wchar_t 		g_wszFindWhat[MAX_SEARCH_REPLACE_LEN] = L"";
 wchar_t 		g_wszReplaceWith[MAX_SEARCH_REPLACE_LEN] = L"";
 
-extern HHOOK 	g_hHook;
+extern HHOOK 	g_hDetectDialogsHook;
 
 //##########################################################
 //
@@ -563,7 +561,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPWSTR lpCmdLine, 
 	StatusBarUpdateIndentType(g_iIndentType);
 
 	// Hook for finding and adjusting dialogs
-	g_hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, (HOOKPROC)DialogHookProc, 0, GetCurrentThreadId());
+	g_hDetectDialogsHook = SetWindowsHookEx(WH_CALLWNDPROCRET, (HOOKPROC)DialogHookProc, 0, GetCurrentThreadId());
 
 	SetFocus(g_pEdit->m_hWnd);
 
@@ -1515,7 +1513,7 @@ void CreateMenus(void)
 
 	// Edit
 	hSubMenu = GetSubMenu(g_hMenuMain, MENU_INDEX_EDIT);
-	// Remove "Search with Bing..."
+	// Remove "Search with Bing..." item
 	RemoveMenu(hSubMenu, IDM_EDIT_SEARCH_BING, MF_BYCOMMAND);
 
 	// Format
@@ -1542,14 +1540,14 @@ void CreateMenus(void)
 	// Help
 	hSubMenu = GetSubMenu(g_hMenuMain, MENU_INDEX_HELP);
 
-	// Change menu item "About" (in engl. it's e.g. "About Notepad") to neutral "Info"
+	// Change About menu item's text (in engl. it's e.g. "About Notepad") to neutral "Info"
 	MENUITEMINFO mmi = {};
 	mmi.cbSize = sizeof(MENUITEMINFO);
 	mmi.fMask = MIIM_STRING;
 	mmi.dwTypeData = L"Info\tF1";
 	SetMenuItemInfo(hSubMenu, IDM_HELP_ABOUT, MF_BYCOMMAND, &mmi);
 
-	// Remove "Help", "Feedback" and separator, so there only the "About" item left
+	// Remove "Help", "Feedback" and separator, so only the "About" item is left
 	RemoveMenu(hSubMenu, IDM_HELP_HELP, MF_BYCOMMAND);
 	RemoveMenu(hSubMenu, IDM_HELP_FEEDBACK, MF_BYCOMMAND);
 	RemoveMenu(hSubMenu, 0, MF_BYPOSITION);

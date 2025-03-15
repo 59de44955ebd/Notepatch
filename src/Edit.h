@@ -90,7 +90,7 @@ private:
 	COLORREF 	m_crLinenoText = COLOR_LINENUMBERS_TEXT_LIGHT;
 
 public:
-				Edit(HWND hwndParent, long m_lControlID, LOGFONT logFont, BOOL bWordWrap, BOOL bShowLinenos);
+				Edit(HWND hwndParent, long lControlID, LOGFONT logFont, BOOL bWordWrap, BOOL bShowLinenos);
 
 	void 		SetDark(BOOL bDark);
 
@@ -114,7 +114,7 @@ public:
 	void 		Clear(void);
 	void 		SelectAll(void);
 
-	void 		SetWordWrap(BOOL pFlag);
+	void 		SetWordWrap(BOOL bFlag);
 
 	int 		ZoomIn(void);
 	int 		ZoomOut(void);
@@ -126,7 +126,7 @@ public:
 	BOOL 		Replace(const wchar_t *pwszFindWhat, const wchar_t *wszReplaceWith, BOOL bCaseSensitive, BOOL bWrap, BOOL bReplaceAll);
 
 	void 		SetTabSize(int iIndentSize);
-	void 		SetUseSpaces(BOOL pUseSpaces);
+	void 		SetUseSpaces(BOOL bUseSpaces);
 
 	// can't be private, SubClassProc must have access
 	LRESULT 	OnChar(WPARAM wParam, LPARAM lParam);

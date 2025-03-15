@@ -17,7 +17,7 @@
 #define MSGBOX_BOTTOM_HEIGHT 42
 #define MSGBOX_SUBCLASS_ID 1
 
-HHOOK g_hHook;
+HHOOK 				g_hDetectDialogsHook;
 
 extern HWND			g_hWndMain;
 extern HINSTANCE 	g_hInstance;
@@ -30,13 +30,13 @@ extern wchar_t 		g_wszReplaceWith[MAX_SEARCH_REPLACE_LEN];
 
 enum DialogType
 {
-	DIALOG_OTHER = 0,
-	DIALOG_CUSTOM_PROC,
-	DIALOG_OFN
+	DIALOG_MSGBOX,			// MessageBox (used as default)
+	DIALOG_CUSTOM_PROC,		// Dialog with custom dialog proc
+	DIALOG_FILE				// Open/Save file dialog
 };
 
 // Used in DialogHookProc to handle dialogs in dark mode according to their flavor
-static DialogType		g_iDialogType = DIALOG_OTHER;
+static DialogType	g_iDialogType = DIALOG_MSGBOX;
 
 
 //##########################################################
@@ -400,26 +400,27 @@ INT_PTR CALLBACK GotoDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 LRESULT DialogHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode < 0)
-        return CallNextHookEx(g_hHook, nCode, wParam, lParam);
+        return CallNextHookEx(g_hDetectDialogsHook, nCode, wParam, lParam);
 	CWPRETSTRUCT *msg = (CWPRETSTRUCT*)lParam;
-    HHOOK hook = g_hHook;
-	wchar_t wszClassName[10];
-	GetClassName(msg->hwnd, wszClassName, 10);
+    HHOOK hHook = g_hDetectDialogsHook;
+	wchar_t wszClassName[8];
+	GetClassName(msg->hwnd, wszClassName, 8);
 
 	if (wcscmp(wszClassName, L"#32770") == 0)
 	{
 		switch (msg->message)
 		{
 		case WM_INITDIALOG:
-			if (g_iDialogType == DIALOG_OFN)
+			if (g_iDialogType == DIALOG_FILE)
 			{
 				if (g_bIsDark)
 				{
+					// This forces dark Open/Save file dialogs even if System uses a light theme
 					DarkMenus(TRUE);
 					SendMessage(msg->hwnd, WM_SETTINGCHANGE, 0, (LPARAM)L"ImmersiveColorSet");
 				}
 			}
-			else if (g_iDialogType == DIALOG_OTHER)
+			else if (g_iDialogType == DIALOG_MSGBOX)
 			{
 				CenterDialog(msg->hwnd);
 				if (g_bIsDark)
@@ -428,12 +429,12 @@ LRESULT DialogHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 					SetWindowSubclass(msg->hwnd, &MsgBoxClassProc, MSGBOX_SUBCLASS_ID, NULL);
 				}
 			}
-			g_iDialogType = DIALOG_OTHER;
+			g_iDialogType = DIALOG_MSGBOX;
 			break;
 		}
 	}
 
-    return CallNextHookEx(hook, nCode, wParam, lParam);
+    return CallNextHookEx(hHook, nCode, wParam, lParam);
 }
 
 //##########################################################
@@ -504,7 +505,7 @@ wchar_t *GetOpenFilename(wchar_t* title, wchar_t* default_name, wchar_t* default
     ofn.lpstrDefExt = default_ext;
     ofn.lpstrFilter = filter;
     ofn.Flags = OFN_ENABLESIZING | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_EXPLORER;
-	g_iDialogType = DIALOG_OFN;
+	g_iDialogType = DIALOG_FILE;
 	BOOL bOk = GetOpenFileName(&ofn);
 	if (bOk)
 		return file_buffer;
@@ -530,7 +531,7 @@ wchar_t *GetSaveFilename(wchar_t* title, wchar_t* default_name, wchar_t* default
     ofn.lpstrDefExt = default_ext;
     ofn.lpstrFilter = filter;
     ofn.Flags = OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
-	g_iDialogType = DIALOG_OFN;
+	g_iDialogType = DIALOG_FILE;
 	BOOL bOk = GetSaveFileName(&ofn);
 	if (bOk)
 		return file_buffer;
