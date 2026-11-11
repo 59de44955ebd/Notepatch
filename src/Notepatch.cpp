@@ -677,6 +677,13 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			OnInitMenu(hWnd, wParam, lParam);
 			break;
 
+		case WM_SETFOCUS:
+			// Give keyboard focus back to the edit control (like classic Notepad),
+			// so typing works right away after Alt+Tab switches back to the window.
+			if (g_pEdit)
+				SetFocus(g_pEdit->m_hWnd);
+			break;
+
 		case WM_SIZE:
 			OnSize(hWnd, wParam, lParam);
 			break;
